@@ -1,5 +1,5 @@
 import { Button } from "@/components/ui/button";
-import { Trash2, Pencil, Eye, Loader2 } from "lucide-react";
+import { Trash2, Pencil, Eye, Loader2, RefreshCw } from "lucide-react";
 
 type BaseProps = {
   onClick?: () => void;
@@ -23,6 +23,7 @@ const getStateStyles = (disabled?: boolean) =>
     ? "opacity-60 cursor-not-allowed"
     : "hover:scale-[1.05] cursor-pointer";
 
+/* ---------------- DELETE ---------------- */
 export const DeleteButton = ({ onClick, loading, disabled }: BaseProps) => {
   const disabledState = isDisabled(loading, disabled);
 
@@ -49,6 +50,7 @@ export const DeleteButton = ({ onClick, loading, disabled }: BaseProps) => {
   );
 };
 
+/* ---------------- EDIT ---------------- */
 export const EditButton = ({ onClick, loading, disabled }: BaseProps) => {
   const disabledState = isDisabled(loading, disabled);
 
@@ -75,6 +77,7 @@ export const EditButton = ({ onClick, loading, disabled }: BaseProps) => {
   );
 };
 
+/* ---------------- VIEW ---------------- */
 export const ViewButton = ({ onClick, loading, disabled }: BaseProps) => {
   const disabledState = isDisabled(loading, disabled);
 
@@ -101,6 +104,7 @@ export const ViewButton = ({ onClick, loading, disabled }: BaseProps) => {
   );
 };
 
+/* ---------------- CANCEL ---------------- */
 export const CancelButton = ({ onClick, disabled }: BaseProps) => {
   const disabledState = isDisabled(false, disabled);
 
@@ -116,7 +120,7 @@ export const CancelButton = ({ onClick, disabled }: BaseProps) => {
       text-gray-600
       transition-all duration-200 active:scale-95
       hover:bg-white/70 hover:text-gray-800
-      focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gray-300
+      focus-visible:ring-gray-300
       ${getStateStyles(disabledState)}
       `}
     >
@@ -125,6 +129,7 @@ export const CancelButton = ({ onClick, disabled }: BaseProps) => {
   );
 };
 
+/* ---------------- SAVE ---------------- */
 export const SaveButton = ({ onClick, loading, disabled }: BaseProps) => {
   const disabledState = isDisabled(loading, disabled);
 
@@ -141,12 +146,41 @@ export const SaveButton = ({ onClick, loading, disabled }: BaseProps) => {
       transition-all duration-300
       active:scale-95
       hover:from-emerald-600 hover:via-teal-600 hover:to-cyan-700
-      focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-300
+      focus-visible:ring-emerald-300
       ${getStateStyles(disabledState)}
       `}
     >
       {loading && <Loader2 className="w-4 h-4 animate-spin" />}
       Save
+    </Button>
+  );
+};
+
+/* ---------------- REFRESH ---------------- */
+export const RefreshButton = ({ onClick, loading, disabled }: BaseProps) => {
+  const disabledState = isDisabled(loading, disabled);
+
+  return (
+    <Button
+      onClick={onClick}
+      disabled={disabledState}
+      variant="outline"
+      className={`
+      group flex items-center gap-2 px-4 py-2.5 rounded-xl
+      border-gray-200 bg-white text-gray-700
+      hover:bg-gray-50 hover:border-gray-300
+      transition-all duration-200 active:scale-95
+      ${getStateStyles(disabledState)}
+      `}
+    >
+      {loading ? (
+        <Loader2 className="w-4 h-4 animate-spin" />
+      ) : (
+        <RefreshCw className="w-4 h-4 group-hover:rotate-180 transition-transform duration-500" />
+      )}
+      <span className="text-sm font-medium">
+        {loading ? "Refreshing..." : "Refresh"}
+      </span>
     </Button>
   );
 };
