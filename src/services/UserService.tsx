@@ -59,7 +59,7 @@ export const usersServices = {
 
   // ================= PERMANENT DELETE =================
   bulkPermanentDeleteUsers: async (userIds: string[]) => {
-    const { data } = await api.patch("/users/bulk/delete", { userIds });
+    const { data } = await api.patch("/users/bulk/permanent", { userIds });
     return data;
   },
 
@@ -69,8 +69,8 @@ export const usersServices = {
     return data;
   },
 
-  bulkRestoreUsers: async (ids: string[]) => {
-    const { data } = await api.patch("/users/bulk/restore", { ids });
+  bulkRestoreUsers: async (userIds: string[]) => {
+    const { data } = await api.patch("/users/bulk/restore", { userIds });
     return data;
   },
 

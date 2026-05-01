@@ -1,5 +1,5 @@
-import { useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useEffect, useState } from "react";
+import { useNavigate, useParams } from "react-router-dom";
 import { motion } from "framer-motion";
 import { useForm, useFieldArray, Controller } from "react-hook-form";
 
@@ -21,7 +21,8 @@ import {
 } from "lucide-react";
 
 import { toast } from "sonner";
-import { useCreateBrand } from "@/hooks/brand/useBrandActions";
+import { useBrands } from "@/hooks/brand/useBrands";
+import { useUpdateBrand } from "@/hooks/brand/useBrandActions";
 
 // ================= TYPES =================
 type ImageType = {
@@ -40,17 +41,18 @@ const defaultImage = { url: "" };
 const cardStyle =
   "rounded-3xl border border-slate-200 bg-white p-7 shadow-sm hover:shadow-md transition-all duration-300";
 
-// ================= MAIN COMPONENT =================
-const CreateBrand = () => {
+// ================= COMPONENT =================
+const EditBrand = () => {
+  const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
 
-  // ================= LOCAL STATE =================
-  const [files, setFiles] = useState<File[]>([]);
+  const [files, setFiles] = useState<(File | null)[]>([]);
 
-  // ================= API HOOKS =================
-  const { handleCreateBrand, loading } = useCreateBrand();
+  // ================= STORE HOOKS =================
+  const { getBrandById, selectedBrand } = useBrands();
+  const { handleUpdateBrand, loading } = useUpdateBrand();
 
-  // ================= FORM SETUP =================
+  // ================= FORM =================
   const {
     register,
     control,
@@ -66,13 +68,32 @@ const CreateBrand = () => {
     },
   });
 
-  // ================= IMAGE FIELD ARRAY =================
-  const { fields, append, remove } = useFieldArray({
+  // ================= FIELD ARRAY =================
+  const { fields, append, remove, replace } = useFieldArray({
     control,
     name: "images",
   });
 
-  // ================= IMAGE UPLOAD HANDLER =================
+  // ================= FETCH BRAND =================
+  useEffect(() => {
+    if (!id) return;
+    getBrandById(id);
+  }, [id, getBrandById]);
+
+  // ================= PREFILL FORM =================
+  useEffect(() => {
+    if (!selectedBrand) return;
+
+    setValue("name", selectedBrand.name);
+    setValue("isActive", selectedBrand.isActive);
+
+    if (selectedBrand.images?.length) {
+      replace(selectedBrand.images);
+      setFiles(new Array(selectedBrand.images.length).fill(null));
+    }
+  }, [selectedBrand, setValue, replace]);
+
+  // ================= IMAGE UPLOAD =================
   const handleImageUpload = (
     e: React.ChangeEvent<HTMLInputElement>,
     index: number,
@@ -91,44 +112,48 @@ const CreateBrand = () => {
     });
   };
 
-  // ================= FORM SUBMIT HANDLER =================
+  // ================= SUBMIT =================
   const onSubmit = async (data: FormValues) => {
-    if (!files.filter(Boolean).length) {
-      toast.error("Please upload at least one brand image");
-      return;
-    }
+    if (!id) return toast.error("Brand ID missing");
 
-    const toastId = toast.loading("Creating brand...");
+    const toastId = toast.loading("Updating brand...");
 
     try {
       const formData = new FormData();
 
       formData.append("name", data.name);
-      formData.append("isActive", String(data.isActive));
+      formData.append("isActive", data.isActive.toString());
 
-      files.forEach((file) => {
-        if (file) {
-          formData.append("images", file);
+      const existingImages: string[] = [];
+
+      data.images.forEach((img, index) => {
+        if (files[index]) {
+          formData.append("images", files[index] as File);
+        } else if (img.url) {
+          existingImages.push(img.url);
         }
       });
 
-      await handleCreateBrand(formData);
+      formData.append("existingImages", JSON.stringify(existingImages));
 
-      toast.success("Brand created successfully", { id: toastId });
+      await handleUpdateBrand(id, formData);
+
+      toast.success("Brand updated successfully", { id: toastId });
       navigate("/dashboard/brands");
-    } catch (err: any) {
-      toast.error(err?.message || "Failed to create brand", {
+    } catch (error: any) {
+      toast.error(error?.message || "Failed to update brand", {
         id: toastId,
       });
     }
   };
 
+  console.log(selectedBrand);
+
   return (
     <div className="min-h-screen bg-slate-50 text-sm">
-      {/* ================= PAGE HEADER ================= */}
       <Header
-        title="Create Brand"
-        description="Build a strong identity for your product ecosystem"
+        title="Edit Brand"
+        description="Update your brand details and manage visibility"
         actionLabel="Back"
         actionIcon={ArrowLeft}
         onAction={() => navigate("/dashboard/brands")}
@@ -136,16 +161,15 @@ const CreateBrand = () => {
         isRefreshiingShow={false}
       />
 
-      {/* ================= BRAND FORM ================= */}
       <form onSubmit={handleSubmit(onSubmit)}>
         <div className="mt-6 grid grid-cols-1 gap-6 xl:grid-cols-12">
-          {/* ================= LEFT CONTENT SECTION ================= */}
+          {/* LEFT */}
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             className="xl:col-span-8 space-y-6"
           >
-            {/* ================= BRAND DETAILS CARD ================= */}
+            {/* BRAND DETAILS */}
             <div className={cardStyle}>
               <div className="mb-5 flex items-center gap-2">
                 <Sparkles className="text-emerald-500" size={18} />
@@ -161,16 +185,14 @@ const CreateBrand = () => {
                 error={errors.name?.message}
               />
 
-              {/* ================= BRAND VISIBILITY INFO ================= */}
               <p className="mt-2 flex items-center gap-1 text-xs text-slate-500">
                 <Eye size={12} />
                 Visible across product listings
               </p>
             </div>
 
-            {/* ================= BRAND IMAGES CARD ================= */}
+            {/* IMAGES */}
             <div className={cardStyle}>
-              {/* ================= IMAGE SECTION HEADER ================= */}
               <div className="mb-6 flex items-center justify-between">
                 <div>
                   <h2 className="flex items-center gap-2 text-lg font-semibold">
@@ -182,7 +204,6 @@ const CreateBrand = () => {
                   </p>
                 </div>
 
-                {/* ================= ADD NEW IMAGE BUTTON ================= */}
                 <button
                   type="button"
                   onClick={() => append(defaultImage)}
@@ -193,20 +214,17 @@ const CreateBrand = () => {
                 </button>
               </div>
 
-              {/* ================= IMAGE LIST ================= */}
               <div className="space-y-5">
                 {fields.map((field, index) => (
                   <div
                     key={field.id}
                     className="rounded-2xl border border-dashed border-slate-300 bg-slate-50 p-5"
                   >
-                    {/* ================= IMAGE CARD HEADER ================= */}
                     <div className="mb-3 flex items-center justify-between">
                       <span className="text-xs font-semibold">
                         IMAGE {index + 1}
                       </span>
 
-                      {/* ================= REMOVE IMAGE BUTTON ================= */}
                       {fields.length > 1 && (
                         <button
                           type="button"
@@ -218,10 +236,10 @@ const CreateBrand = () => {
                       )}
                     </div>
 
-                    {/* ================= IMAGE PREVIEW OR UPLOAD ================= */}
                     {watch(`images.${index}.url`) ? (
                       <img
                         src={watch(`images.${index}.url`)}
+                        alt="brand"
                         className="h-28 w-28 rounded-xl border object-cover"
                       />
                     ) : (
@@ -242,14 +260,13 @@ const CreateBrand = () => {
               </div>
             </div>
 
-            {/* ================= BRAND STATUS CARD ================= */}
+            {/* STATUS */}
             <div className={cardStyle}>
               <h2 className="mb-5 flex items-center gap-2 text-lg font-semibold">
                 <ToggleLeft size={18} />
                 Visibility Control
               </h2>
 
-              {/* ================= ACTIVE / INACTIVE TOGGLE ================= */}
               <Controller
                 name="isActive"
                 control={control}
@@ -284,21 +301,19 @@ const CreateBrand = () => {
             </div>
           </motion.div>
 
-          {/* ================= RIGHT SIDEBAR SECTION ================= */}
+          {/* RIGHT */}
           <motion.div
             initial={{ opacity: 0, x: 15 }}
             animate={{ opacity: 1, x: 0 }}
             className="xl:col-span-4"
           >
             <div className="sticky top-6 rounded-3xl border bg-white p-6">
-              {/* ================= BRAND LIVE PREVIEW ================= */}
               <div className="rounded-2xl bg-gradient-to-r from-emerald-500 to-cyan-500 p-6 text-center text-white">
                 <h3 className="text-xl font-bold">
                   {watch("name") || "Brand Preview"}
                 </h3>
               </div>
 
-              {/* ================= BRAND SUMMARY ================= */}
               <div className="mt-6 space-y-3 text-sm">
                 <div className="rounded-xl bg-slate-50 p-3">
                   Images: {fields.length}
@@ -309,14 +324,13 @@ const CreateBrand = () => {
                 </div>
               </div>
 
-              {/* ================= SUBMIT BUTTON ================= */}
               <button
                 type="submit"
                 disabled={loading}
                 className="mt-6 w-full rounded-2xl bg-emerald-600 py-3 text-white"
               >
                 <Save className="mr-2 inline" size={16} />
-                {loading ? "Creating..." : "Create Brand"}
+                {loading ? "Updating..." : "Update Brand"}
               </button>
             </div>
           </motion.div>
@@ -326,4 +340,4 @@ const CreateBrand = () => {
   );
 };
 
-export default CreateBrand;
+export default EditBrand;

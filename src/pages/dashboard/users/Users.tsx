@@ -21,6 +21,9 @@ import {
   User,
   Search,
   Truck,
+  Trash2,
+  Trash,
+  RotateCcw,
 } from "lucide-react";
 import { FiRefreshCw, FiUserPlus, FiUsers } from "react-icons/fi";
 import { defaultAvatar } from "@/assets";
@@ -201,29 +204,33 @@ const UsersPage = () => {
               <div className="flex flex-wrap items-center gap-3">
                 <button
                   onClick={() => setBulkDeleteOpen(true)}
-                  className="rounded-xl bg-red-600 px-4 py-2.5 text-sm font-medium text-white shadow-sm transition hover:bg-red-700"
+                  className="flex items-center gap-2 rounded-xl bg-red-600 px-4 py-2.5 text-sm font-medium text-white shadow-sm transition hover:bg-red-700"
                 >
+                  <Trash2 size={16} />
                   Delete Selected
                 </button>
 
                 <button
                   onClick={() => setPermanentDeleteOpen(true)}
-                  className="rounded-xl border border-red-200 bg-red-50 px-4 py-2.5 text-sm font-medium text-red-600 transition hover:bg-red-100"
+                  className="flex items-center gap-2  rounded-xl border border-red-200 bg-red-50 px-4 py-2.5 text-sm font-medium text-red-600 transition hover:bg-red-100"
                 >
+                  <Trash size={16} />
                   Permanent Delete
                 </button>
 
                 <button
                   onClick={handleBulkRestore}
-                  className="rounded-xl border border-emerald-200 bg-emerald-50 px-4 py-2.5 text-sm font-medium text-emerald-600 hover:bg-emerald-100"
+                  className="flex items-center gap-2 rounded-xl border border-emerald-200 bg-emerald-50 px-4 py-2.5 text-sm font-medium text-emerald-600 hover:bg-emerald-100"
                 >
+                  <RotateCcw size={16} />
                   Restore Selected
                 </button>
 
                 <button
                   onClick={() => setSelectedUsers([])}
-                  className="rounded-xl border border-slate-200 px-4 py-2.5 text-sm font-medium text-slate-600 transition hover:bg-slate-50"
+                  className="flex items-center gap-2  rounded-xl border border-slate-200 px-4 py-2.5 text-sm font-medium text-slate-600 transition hover:bg-slate-50"
                 >
+                  <XCircle size={16} />
                   Clear Selection
                 </button>
               </div>
@@ -380,7 +387,6 @@ const UsersPage = () => {
 
                         return (
                           <span className={`${base} ${styles[status]}`}>
-                            {/* DOT INDICATOR */}
                             <span
                               className={`h-2 w-2 rounded-full ${
                                 status === "deleted"
@@ -428,6 +434,7 @@ const UsersPage = () => {
               )}
             </TableBody>
           </Table>
+          {/* =================  DELETE MODAL ================= */}
           <ConfirmModal
             open={open}
             userName={
