@@ -18,6 +18,10 @@ import Brands from "@/pages/dashboard/products/brands/Brands";
 import CreateBrandPage from "@/pages/dashboard/products/brands/CreateBrand";
 import EditBrandPage from "@/pages/dashboard/products/brands/EditBrand";
 
+import CategoriesPage from "@/pages/dashboard/products/category/Categories";
+import CreateCategoryPage from "@/pages/dashboard/products/category/CreateCategory";
+import EditCategoryPage from "@/pages/dashboard/products/category/EditCategory";
+
 import Banners from "@/pages/dashboard/products/Banners";
 import Categories from "@/pages/dashboard/products/Categories";
 
@@ -50,6 +54,16 @@ export const router = createBrowserRouter([
           { path: "/dashboard/brands", element: <Brands /> },
           { path: "/dashboard/brands/create", element: <CreateBrandPage /> },
           { path: "/dashboard/brands/edit/:id", element: <EditBrandPage /> },
+          // ================= PRODUCTS META =================
+          { path: "/dashboard/categories", element: <CategoriesPage /> },
+          {
+            path: "/dashboard/categories/create",
+            element: <CreateCategoryPage />,
+          },
+          {
+            path: "/dashboard/categories/edit/:id",
+            element: <EditCategoryPage />,
+          },
           { path: "/dashboard/banners", element: <Banners /> },
           { path: "/dashboard/categories", element: <Categories /> },
 
