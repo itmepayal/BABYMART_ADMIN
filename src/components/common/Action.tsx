@@ -1,3 +1,4 @@
+import type { ReactNode } from "react";
 import { Button } from "@/components/ui/button";
 import { Trash2, Pencil, Eye, Loader2, RefreshCw } from "lucide-react";
 
@@ -5,6 +6,8 @@ type BaseProps = {
   onClick?: () => void;
   loading?: boolean;
   disabled?: boolean;
+  label?: string;
+  icon?: ReactNode;
 };
 
 const isDisabled = (loading?: boolean, disabled?: boolean) =>
@@ -130,7 +133,13 @@ export const CancelButton = ({ onClick, disabled }: BaseProps) => {
 };
 
 /* ---------------- SAVE ---------------- */
-export const SaveButton = ({ onClick, loading, disabled }: BaseProps) => {
+export const SaveButton = ({
+  onClick,
+  loading,
+  disabled,
+  label,
+  icon,
+}: BaseProps) => {
   const disabledState = isDisabled(loading, disabled);
 
   return (
@@ -151,7 +160,8 @@ export const SaveButton = ({ onClick, loading, disabled }: BaseProps) => {
       `}
     >
       {loading && <Loader2 className="w-4 h-4 animate-spin" />}
-      Save
+      {!loading && icon && <span className="w-4 h-4">{icon}</span>}
+      {label ? label : "Save"}
     </Button>
   );
 };
