@@ -31,8 +31,6 @@ const Dashboard = () => {
     orders: 0,
   };
   const revenue = StatsData?.revenue || 0;
-
-  // API DATA
   const categoryData =
     StatsData?.productsByCategory?.map((item) => ({
       name: item.categoryName,
