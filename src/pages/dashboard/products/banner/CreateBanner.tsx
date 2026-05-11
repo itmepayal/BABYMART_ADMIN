@@ -5,16 +5,18 @@ import { useForm, Controller } from "react-hook-form";
 
 import { Header } from "@/components/dashbaord/Header";
 import { FormField } from "@/components/form/FormInput";
+import { SaveButton } from "@/components/common/Action";
 
+import { FiRefreshCw } from "react-icons/fi";
 import {
   ArrowLeft,
-  Upload,
-  Image as ImageIcon,
   Save,
   Sparkles,
-  ToggleLeft,
-  Calendar,
+  ImagePlus,
   Layers,
+  Image as ImageIcon,
+  Calendar,
+  LayoutTemplate,
 } from "lucide-react";
 
 import { toast } from "sonner";
@@ -31,12 +33,12 @@ type FormValues = {
 
 // ================= STYLE =================
 const cardStyle =
-  "rounded-3xl border border-slate-200 bg-white p-7 shadow-sm hover:shadow-md transition";
+  "rounded-3xl border border-slate-200 bg-white p-7 shadow-sm hover:shadow-lg transition-all duration-300";
 
 const CreateBanner = () => {
   const navigate = useNavigate();
+
   const [file, setFile] = useState<File | null>(null);
-  const [preview, setPreview] = useState<string>("");
 
   const { handleCreateBanner, loading } = useCreateBanner();
 
@@ -45,7 +47,7 @@ const CreateBanner = () => {
     control,
     handleSubmit,
     watch,
-    reset,
+    setValue,
     formState: { errors },
   } = useForm<FormValues>({
     defaultValues: {
@@ -58,13 +60,20 @@ const CreateBanner = () => {
   });
 
   // ================= IMAGE HANDLER =================
-  const handleImage = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const f = e.target.files?.[0];
-    if (!f) return;
+  const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const selected = e.target.files?.[0];
+    if (!selected) return;
 
-    setFile(f);
-    setPreview(URL.createObjectURL(f));
+    setFile(selected);
+    setValue("bannerType", watch("bannerType"));
+    setValue("name", watch("name"));
+    setValue("title", watch("title"));
+    setValue("startFrom", watch("startFrom"));
+
+    setPreview(URL.createObjectURL(selected));
   };
+
+  const [preview, setPreview] = useState("");
 
   // ================= SUBMIT =================
   const onSubmit = async (data: FormValues) => {
@@ -72,8 +81,6 @@ const CreateBanner = () => {
       toast.error("Please upload banner image");
       return;
     }
-
-    const toastId = toast.loading("Creating banner...");
 
     try {
       const formData = new FormData();
@@ -86,177 +93,292 @@ const CreateBanner = () => {
       formData.append("image", file);
 
       await handleCreateBanner(formData);
-      reset();
 
-      toast.success("Banner created successfully", { id: toastId });
+      toast.success("Banner created successfully");
       navigate("/dashboard/banners");
     } catch (err: any) {
-      toast.error(err?.message || "Failed to create banner", {
-        id: toastId,
-      });
+      toast.error(err?.response?.data?.message || "Failed to create banner");
     }
   };
 
   return (
-    <div className="min-h-screen bg-slate-50 text-sm">
+    <div className="min-h-screen">
       {/* ================= HEADER ================= */}
       <Header
         title="Create Banner"
-        description="Design promotional banners for your store"
+        description="Add a new banner for promotions and homepage sections"
         actionLabel="Back"
         actionIcon={ArrowLeft}
         onAction={() => navigate("/dashboard/banners")}
+        refreshIcon={FiRefreshCw}
+        isRefreshiingShow={false}
       />
 
-      <form onSubmit={handleSubmit(onSubmit)}>
-        <div className="mt-6 grid grid-cols-1 gap-6 xl:grid-cols-12">
-          {/* ================= LEFT ================= */}
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            className="xl:col-span-8 space-y-6"
-          >
-            {/* ================= BASIC INFO ================= */}
-            <div className={cardStyle}>
-              <div className="mb-5 flex items-center gap-2">
-                <Sparkles className="text-emerald-500" size={18} />
-                <h2 className="text-lg font-semibold">Banner Details</h2>
-              </div>
+      {/* ================= FORM ================= */}
+      <div className="mx-auto py-8">
+        <form onSubmit={handleSubmit(onSubmit)}>
+          <div className="grid gap-8 xl:grid-cols-12">
+            {/* ================= LEFT ================= */}
+            <div className="space-y-8 xl:col-span-8">
+              {/* ================= BANNER DETAILS ================= */}
+              <motion.div
+                initial={{ opacity: 0, y: 15 }}
+                animate={{ opacity: 1, y: 0 }}
+                className={cardStyle}
+              >
+                <div className="mb-6 flex items-center gap-3">
+                  <div className="rounded-xl bg-emerald-50 p-2">
+                    <Sparkles className="text-emerald-600" size={18} />
+                  </div>
 
-              <div className="space-y-4">
-                <FormField
-                  label="Banner Name"
-                  icon={ImageIcon}
-                  {...register("name", { required: "Required" })}
-                  error={errors.name?.message}
-                />
+                  <div>
+                    <h2 className="text-lg font-semibold">Banner Details</h2>
+                    <p className="text-sm text-slate-500">
+                      Create banner identity and metadata
+                    </p>
+                  </div>
+                </div>
 
-                <FormField
-                  label="Title"
-                  icon={Layers}
-                  {...register("title", { required: "Required" })}
-                  error={errors.title?.message}
-                />
+                <div className="space-y-5">
+                  <div className="grid grid-cols-1 gap-5 md:grid-cols-2">
+                    <FormField
+                      label="Banner Name"
+                      icon={LayoutTemplate}
+                      placeholder="Enter banner name"
+                      {...register("name", {
+                        required: "Banner name is required",
+                      })}
+                      error={errors.name?.message}
+                    />
 
-                <FormField
-                  label="Start From"
-                  type="date"
-                  icon={Calendar}
-                  {...register("startFrom", { required: "Required" })}
-                />
+                    <FormField
+                      label="Banner Title"
+                      icon={Layers}
+                      placeholder="Enter banner title"
+                      {...register("title", {
+                        required: "Banner title is required",
+                      })}
+                      error={errors.title?.message}
+                    />
+                  </div>
 
-                <FormField
-                  label="Banner Type"
-                  icon={Layers}
-                  {...register("bannerType")}
-                />
-              </div>
-            </div>
+                  <div className="grid grid-cols-1 gap-5 md:grid-cols-2">
+                    <FormField
+                      label="Start From"
+                      type="date"
+                      icon={Calendar}
+                      {...register("startFrom", {
+                        required: "Start date is required",
+                      })}
+                      error={errors.startFrom?.message}
+                    />
 
-            {/* ================= IMAGE ================= */}
-            <div className={cardStyle}>
-              <h2 className="mb-4 text-lg font-semibold flex items-center gap-2">
-                <Upload size={18} className="text-emerald-500" />
-                Banner Image
-              </h2>
+                    <FormField
+                      label="Banner Type"
+                      icon={Layers}
+                      placeholder="Enter banner type"
+                      {...register("bannerType")}
+                    />
+                  </div>
+                </div>
+              </motion.div>
 
-              {preview ? (
-                <img
-                  src={preview}
-                  className="h-40 w-full rounded-2xl object-cover border"
-                />
-              ) : (
-                <label className="flex cursor-pointer flex-col items-center justify-center rounded-2xl border-2 border-dashed py-10">
-                  <Upload />
-                  <span className="mt-2 text-xs">Upload Banner Image</span>
-                  <input type="file" hidden onChange={handleImage} />
-                </label>
-              )}
-            </div>
+              {/* ================= IMAGE ================= */}
+              <motion.div
+                initial={{ opacity: 0, y: 15 }}
+                animate={{ opacity: 1, y: 0 }}
+                className={cardStyle}
+              >
+                <div className="mb-6 flex items-center gap-3">
+                  <div className="rounded-xl bg-emerald-50 p-2">
+                    <ImageIcon className="text-emerald-600" size={18} />
+                  </div>
 
-            {/* ================= STATUS ================= */}
-            <div className={cardStyle}>
-              <h2 className="mb-4 flex items-center gap-2 text-lg font-semibold">
-                <ToggleLeft size={18} />
-                Status
-              </h2>
+                  <div>
+                    <h2 className="text-lg font-semibold">Banner Image</h2>
+                    <p className="text-sm text-slate-500">
+                      Upload promotional banner image
+                    </p>
+                  </div>
+                </div>
 
-              <Controller
-                name="isActive"
-                control={control}
-                render={({ field }) => (
-                  <button
-                    type="button"
-                    onClick={() => field.onChange(!field.value)}
-                    className={`flex w-full items-center justify-between rounded-2xl border px-5 py-4 ${
-                      field.value
-                        ? "bg-emerald-50 text-emerald-700"
-                        : "bg-red-50 text-red-600"
-                    }`}
-                  >
-                    <span>
-                      {field.value ? "Active Banner" : "Inactive Banner"}
-                    </span>
+                {preview ? (
+                  <div className="relative overflow-hidden rounded-2xl border">
+                    <img
+                      src={preview}
+                      alt="preview"
+                      className="h-72 w-full object-cover"
+                    />
+                  </div>
+                ) : (
+                  <label className="flex min-h-[280px] cursor-pointer flex-col items-center justify-center rounded-2xl border-2 border-dashed border-slate-300 bg-slate-50 hover:border-emerald-500">
+                    <div className="rounded-2xl bg-emerald-50 p-4">
+                      <ImagePlus className="text-emerald-600" size={28} />
+                    </div>
 
-                    <div
-                      className={`h-6 w-11 rounded-full p-1 ${
-                        field.value ? "bg-emerald-500" : "bg-red-500"
+                    <p className="mt-3 text-sm font-semibold text-slate-700">
+                      Upload Banner
+                    </p>
+
+                    <p className="text-xs text-slate-400">
+                      PNG, JPG, WEBP supported
+                    </p>
+
+                    <input
+                      type="file"
+                      hidden
+                      accept="image/*"
+                      onChange={handleImageUpload}
+                    />
+                  </label>
+                )}
+              </motion.div>
+
+              {/* ================= STATUS ================= */}
+              <motion.div
+                initial={{ opacity: 0, y: 15 }}
+                animate={{ opacity: 1, y: 0 }}
+                className={cardStyle}
+              >
+                <div className="mb-6 flex items-center gap-3">
+                  <div className="flex h-11 w-11 items-center justify-center rounded-2xl bg-gradient-to-br from-emerald-100 to-emerald-50 shadow-sm">
+                    <Layers className="text-emerald-600" size={18} />
+                  </div>
+
+                  <div>
+                    <h2 className="text-lg font-semibold text-slate-900">
+                      Banner Visibility
+                    </h2>
+                    <p className="text-sm text-slate-500">
+                      Control whether this banner is visible
+                    </p>
+                  </div>
+                </div>
+
+                <Controller
+                  name="isActive"
+                  control={control}
+                  render={({ field }) => (
+                    <button
+                      type="button"
+                      onClick={() => field.onChange(!field.value)}
+                      className={`flex w-full items-center justify-between rounded-2xl border px-5 py-4 transition-all duration-300 ${
+                        field.value
+                          ? "border-emerald-200 bg-emerald-50 text-emerald-700"
+                          : "border-red-200 bg-red-50 text-red-600"
                       }`}
                     >
+                      <div className="flex flex-col items-start">
+                        <span className="text-sm font-semibold">
+                          {field.value ? "Active Banner" : "Inactive Banner"}
+                        </span>
+
+                        <span className="text-xs opacity-70">
+                          {field.value
+                            ? "Banner visible across website"
+                            : "Banner hidden from users"}
+                        </span>
+                      </div>
+
                       <div
-                        className={`h-4 w-4 rounded-full bg-white transition ${
-                          field.value ? "ml-auto" : ""
+                        className={`relative h-7 w-12 rounded-full p-1 transition-all ${
+                          field.value ? "bg-emerald-500" : "bg-red-500"
                         }`}
-                      />
+                      >
+                        <div
+                          className={`h-5 w-5 rounded-full bg-white shadow transition-all duration-300 ${
+                            field.value ? "translate-x-5" : "translate-x-0"
+                          }`}
+                        />
+                      </div>
+                    </button>
+                  )}
+                />
+              </motion.div>
+            </div>
+
+            {/* ================= RIGHT SIDEBAR ================= */}
+            <div className="xl:col-span-4">
+              <div className="sticky top-6">
+                <div className="overflow-hidden rounded-3xl border border-slate-200 bg-white shadow-xl shadow-slate-100">
+                  <div className="flex items-center justify-between border-b border-slate-100 px-6 py-5">
+                    <div>
+                      <h2 className="text-lg font-semibold text-slate-900">
+                        Live Preview
+                      </h2>
+                      <p className="text-xs text-slate-500">
+                        Real-time banner preview
+                      </p>
                     </div>
-                  </button>
-                )}
-              />
-            </div>
-          </motion.div>
 
-          {/* ================= RIGHT ================= */}
-          <motion.div
-            initial={{ opacity: 0, x: 20 }}
-            animate={{ opacity: 1, x: 0 }}
-            className="xl:col-span-4"
-          >
-            <div className="sticky top-6 rounded-3xl border bg-white p-6">
-              {/* PREVIEW */}
-              <div className="rounded-2xl bg-gradient-to-r from-emerald-500 to-cyan-500 p-6 text-white text-center">
-                <h3 className="text-xl font-bold">
-                  {watch("title") || "Banner Preview"}
-                </h3>
+                    <span
+                      className={`rounded-full px-3 py-1 text-xs font-semibold ring-1 ${
+                        watch("isActive")
+                          ? "bg-emerald-50 text-emerald-600 ring-emerald-100"
+                          : "bg-red-50 text-red-600 ring-red-100"
+                      }`}
+                    >
+                      {watch("isActive") ? "Active" : "Inactive"}
+                    </span>
+                  </div>
+
+                  <div className="p-6 pb-0">
+                    <div className="overflow-hidden rounded-2xl border border-slate-200 bg-slate-50">
+                      {preview ? (
+                        <img
+                          src={preview}
+                          alt="preview"
+                          className="h-72 w-full object-cover"
+                        />
+                      ) : (
+                        <div className="flex h-72 items-center justify-center text-slate-400">
+                          <ImageIcon size={40} />
+                        </div>
+                      )}
+                    </div>
+                  </div>
+
+                  <div className="space-y-6 p-6">
+                    <div>
+                      <h3 className="text-2xl font-bold text-slate-900">
+                        {watch("title") || "Banner Title"}
+                      </h3>
+
+                      <p className="mt-2 text-sm text-slate-500">
+                        {watch("name") || "Banner Name"}
+                      </p>
+                    </div>
+
+                    <div className="grid grid-cols-2 gap-4">
+                      <div className="rounded-2xl border border-emerald-100 bg-emerald-50 p-4">
+                        <p className="text-xs text-slate-500">Status</p>
+                        <p className="mt-1 font-bold text-emerald-600">
+                          {watch("isActive") ? "Active" : "Inactive"}
+                        </p>
+                      </div>
+
+                      <div className="rounded-2xl border border-slate-200 bg-slate-50 p-4">
+                        <p className="text-xs text-slate-500">Type</p>
+                        <p className="mt-1 font-bold text-slate-900 capitalize">
+                          {watch("bannerType")}
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className="border-t border-slate-100 bg-slate-50 px-6 py-5">
+                    <SaveButton
+                      loading={loading}
+                      icon={<Save size={18} />}
+                      label="Create Banner"
+                    />
+                  </div>
+                </div>
               </div>
-
-              {/* INFO */}
-              <div className="mt-5 space-y-3 text-sm">
-                <div className="rounded-xl bg-slate-50 p-3">
-                  Name: {watch("name") || "-"}
-                </div>
-
-                <div className="rounded-xl bg-slate-50 p-3">
-                  Type: {watch("bannerType")}
-                </div>
-
-                <div className="rounded-xl bg-slate-50 p-3">
-                  Status: {watch("isActive") ? "Active" : "Inactive"}
-                </div>
-              </div>
-
-              {/* BUTTON */}
-              <button
-                type="submit"
-                disabled={loading}
-                className="mt-6 w-full rounded-2xl bg-emerald-600 py-3 text-white"
-              >
-                <Save size={16} className="mr-2 inline" />
-                {loading ? "Creating..." : "Create Banner"}
-              </button>
             </div>
-          </motion.div>
-        </div>
-      </form>
+          </div>
+        </form>
+      </div>
     </div>
   );
 };

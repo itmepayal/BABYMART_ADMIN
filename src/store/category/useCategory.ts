@@ -1,7 +1,6 @@
 import { create } from "zustand";
 import { categoryService, type Category } from "@/services/CategoriesService";
 
-// ================= STATE TYPE =================
 type CategoryState = {
   categories: Category[];
   selectedCategory: Category | null;
@@ -36,7 +35,6 @@ type CategoryState = {
   setCategories: (categories: Category[]) => void;
 };
 
-// ================= STORE =================
 export const useCategoryStore = create<CategoryState>((set, get) => ({
   categories: [],
   selectedCategory: null,
@@ -52,7 +50,10 @@ export const useCategoryStore = create<CategoryState>((set, get) => ({
   // ================= GET ALL =================
   getAllCategories: async (params = {}) => {
     try {
-      set({ loading: true, isFetchingCategories: true });
+      set({
+        loading: true,
+        isFetchingCategories: true,
+      });
 
       const res = await categoryService.getAllCategories(params);
 
@@ -134,9 +135,8 @@ export const useCategoryStore = create<CategoryState>((set, get) => ({
   deleteCategory: async (id) => {
     const prev = get().categories;
 
-    // optimistic UI
     set({
-      categories: prev.filter((c) => c._id !== id),
+      categories: prev.filter((category) => category._id !== id),
     });
 
     try {
@@ -155,7 +155,7 @@ export const useCategoryStore = create<CategoryState>((set, get) => ({
     const prev = get().categories;
 
     set({
-      categories: prev.filter((c) => !ids.includes(c._id)),
+      categories: prev.filter((category) => !ids.includes(category._id)),
     });
 
     try {
@@ -186,7 +186,7 @@ export const useCategoryStore = create<CategoryState>((set, get) => ({
     const prev = get().categories;
 
     set({
-      categories: prev.filter((c) => !ids.includes(c._id)),
+      categories: prev.filter((category) => !ids.includes(category._id)),
     });
 
     try {

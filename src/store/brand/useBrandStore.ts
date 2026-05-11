@@ -2,6 +2,8 @@ import { create } from "zustand";
 import { brandService } from "@/services/BrandService";
 
 type Brand = {
+  updatedAt: string | number | Date;
+  createdAt: string | number | Date;
   _id: string;
   name: string;
   images: { url: string; public_id: string }[];
@@ -53,11 +55,11 @@ export const useBrandStore = create<BrandState>((set, get) => ({
   pages: 1,
 
   // ================= GET ALL =================
-  getAllBrands: async () => {
+  getAllBrands: async (params = {}) => {
     try {
       set({ loading: true, isFetchingBrands: true });
 
-      const res = await brandService.getAllBrands();
+      const res = await brandService.getAllBrands(params);
 
       set({
         brands: res.brands,

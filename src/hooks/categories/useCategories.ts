@@ -25,8 +25,12 @@ export const useCategories = () => {
 
   // ================= AUTO FETCH =================
   useEffect(() => {
-    getAllCategories();
-  }, []);
+    getAllCategories({
+      page: 1,
+      limit: 10,
+      search: "",
+    });
+  }, [getAllCategories]);
 
   return {
     // ================= STATE =================

@@ -7,6 +7,8 @@ export type Brand = {
   images: { url: string; public_id: string }[];
   isActive: boolean;
   isDeleted?: boolean;
+  createdAt: string;
+  updatedAt: string;
 };
 
 type CreateBrandPayload = {

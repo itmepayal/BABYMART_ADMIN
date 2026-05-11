@@ -19,6 +19,8 @@ type Product = {
   stock: number;
   averageRating: number;
   isDeleted?: boolean;
+  createdAt: string;
+  updatedAt: string;
 };
 
 // ================= QUERY PARAMS =================

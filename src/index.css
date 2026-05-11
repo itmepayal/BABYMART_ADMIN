@@ -165,3 +165,53 @@
     }
   }
 }
+
+@layer components {
+  .ProseMirror h1 {
+    font-size: 2.2rem;
+    font-weight: 700;
+    margin: 1rem 0;
+  }
+
+  .ProseMirror h2 {
+    font-size: 1.8rem;
+    font-weight: 600;
+    margin: 0.8rem 0;
+  }
+
+  .ProseMirror h3 {
+    font-size: 1.5rem;
+    font-weight: 600;
+    margin: 0.7rem 0;
+  }
+
+  .ProseMirror h4 {
+    font-size: 1.25rem;
+    font-weight: 500;
+    margin: 0.6rem 0;
+  }
+
+  .ProseMirror h5 {
+    font-size: 1.1rem;
+    font-weight: 500;
+  }
+
+  .ProseMirror h6 {
+    font-size: 1rem;
+    font-weight: 500;
+  }
+
+  .ProseMirror ul {
+    padding-left: 1.5rem;
+    list-style-type: disc;
+  }
+
+  .ProseMirror ol {
+    padding-left: 1.5rem;
+    list-style-type: decimal;
+  }
+
+  .ProseMirror li {
+    margin: 0.25rem 0;
+  }
+}

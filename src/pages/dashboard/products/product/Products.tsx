@@ -59,8 +59,12 @@ const Products = () => {
 
   const { handleDeleteProduct } = useDeleteProduct();
 
-  const { handleBulkDelete, handleBulkRestore, handleBulkPermanentDelete } =
-    useProductBulkActions();
+  const {
+    handleBulkDelete,
+    handleBulkRestore,
+    handleBulkPermanentDelete,
+    loading: bulkLoading,
+  } = useProductBulkActions();
 
   // ================= FILTER =================
   const filteredProducts = useMemo(() => {
@@ -134,143 +138,120 @@ const Products = () => {
       />
 
       {/* ================= SEARCH BAR ================= */}
-      <div className="rounded-2xl border bg-white px-4 py-3 shadow-sm">
-        <div className="relative w-full max-w-sm">
+      <div className="rounded-2xl border border-slate-200 bg-white px-4 py-4 shadow-sm">
+        <div className="relative w-full max-w-md">
+          <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400" />
           <input
+            type="text"
             value={search}
             onChange={(e) => setSearch(e.target.value)}
-            placeholder="Search products..."
-            className="w-full rounded-xl border border-slate-200 bg-white py-2.5 pl-10 pr-4 text-sm outline-none transition focus:border-emerald-500 focus:ring-2 focus:ring-emerald-100"
+            placeholder="Search products by name..."
+            className="w-full rounded-xl border border-slate-200 bg-slate-50 py-3 pl-10 pr-10 text-sm text-slate-700 outline-none transition-all placeholder:text-slate-400 focus:border-emerald-500 focus:bg-white focus:ring-2 focus:ring-emerald-100"
           />
-          <Search className="absolute left-3 top-3 h-4 w-4 text-slate-400" />
+          {search && (
+            <button
+              onClick={() => setSearch("")}
+              className="absolute right-3 top-1/2 -translate-y-1/2 rounded-full p-1 text-slate-400 transition hover:bg-slate-100 hover:text-slate-600"
+            >
+              ✕
+            </button>
+          )}
         </div>
       </div>
-
-      {/* ================= BRANDS TABLE SECTION ================= */}
-      <div className="overflow-hidden rounded-3xl border border-slate-200 bg-white shadow-sm">
+      {/* ================= TABLE SECTION ================= */}
+      <div className="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm">
         {/* ================= BULK ACTION TOOLBAR ================= */}
         {selectedProducts.length > 0 && (
-          <div className="border-b border-slate-100 px-6 py-4">
-            <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
-              {/* LEFT */}
-              <div className="flex items-center gap-3">
-                <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-emerald-50">
-                  <span className="text-sm font-bold text-emerald-600">
+          <div className="sticky top-0 z-20 border-b border-slate-200 bg-white/95 px-6 py-4 backdrop-blur-md">
+            <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
+              <div className="flex items-center gap-4">
+                <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-emerald-100 shadow-sm">
+                  <span className="text-base font-bold text-emerald-700">
                     {selectedProducts.length}
                   </span>
                 </div>
 
                 <div>
                   <h3 className="text-sm font-semibold text-slate-900">
-                    {selectedProducts.length} Products Selected
+                    {selectedProducts.length} Product
+                    {selectedProducts.length > 1 ? "s" : ""} Selected
                   </h3>
                   <p className="text-xs text-slate-500">
-                    Perform bulk actions on selected products
+                    Manage selected products with bulk actions
                   </p>
                 </div>
               </div>
 
-              {/* RIGHT */}
               <div className="flex flex-wrap items-center gap-3">
                 <button
+                  onClick={handleRestoreClick}
+                  className="inline-flex items-center gap-2 rounded-xl border border-emerald-200 bg-emerald-50 px-4 py-2.5 text-sm font-medium text-emerald-700 transition hover:bg-emerald-100"
+                >
+                  <RotateCcw size={16} />
+                  Restore
+                </button>
+
+                <button
                   onClick={() => setBulkDeleteOpen(true)}
-                  className="flex items-center gap-2 rounded-xl bg-red-600 px-4 py-2.5 text-sm font-medium text-white shadow-sm transition hover:bg-red-700"
+                  className="inline-flex items-center gap-2 rounded-xl bg-amber-500 px-4 py-2.5 text-sm font-medium text-white shadow-sm transition hover:bg-amber-600"
                 >
                   <Trash2 size={16} />
-                  Delete Selected
+                  Delete
                 </button>
 
                 <button
                   onClick={() => setPermanentDeleteOpen(true)}
-                  className="flex items-center gap-2  rounded-xl border border-red-200 bg-red-50 px-4 py-2.5 text-sm font-medium text-red-600 transition hover:bg-red-100"
+                  className="inline-flex items-center gap-2 rounded-xl bg-red-600 px-4 py-2.5 text-sm font-medium text-white shadow-sm transition hover:bg-red-700"
                 >
                   <Trash size={16} />
                   Permanent Delete
                 </button>
 
                 <button
-                  onClick={handleRestoreClick}
-                  className="flex items-center gap-2 rounded-xl border border-emerald-200 bg-emerald-50 px-4 py-2.5 text-sm font-medium text-emerald-600 hover:bg-emerald-100"
-                >
-                  <RotateCcw size={16} />
-                  Restore Selected
-                </button>
-
-                <button
                   onClick={() => setSelectedProducts([])}
-                  className="flex items-center gap-2  rounded-xl border border-slate-200 px-4 py-2.5 text-sm font-medium text-slate-600 transition hover:bg-slate-50"
+                  className="inline-flex items-center gap-2 rounded-xl border border-slate-200 bg-white px-4 py-2.5 text-sm font-medium text-slate-700 transition hover:bg-slate-50"
                 >
                   <XCircle size={16} />
-                  Clear Selection
+                  Clear
                 </button>
               </div>
             </div>
           </div>
         )}
 
-        {/* ================= BRANDS TABLE ================= */}
-        <div className="overflow-x-auto">
-          <Table>
+        {/* ================= TABLE ================= */}
+        <div className="overflow-x-auto rounded-2xl border border-slate-200">
+          <Table className="min-w-[1200px]">
             <TableHeader>
-              <TableRow className="bg-slate-50 hover:bg-slate-50">
+              <TableRow className="bg-slate-50 hover:bg-slate-50 h-14!">
                 <TableHead className="w-[50px] text-center">
                   <input
                     type="checkbox"
                     checked={isAllSelected}
                     onChange={toggleSelectAll}
-                    className="h-4 w-4 rounded border-slate-300 text-emerald-600"
+                    className="h-4 w-4 rounded border-slate-300"
                   />
                 </TableHead>
-
-                <TableHead className="text-center text-xs font-semibold uppercase tracking-wider text-slate-500">
-                  Image
+                <TableHead className="min-w-[280px]">Product</TableHead>
+                <TableHead className="w-[110px] text-center">Price</TableHead>
+                <TableHead className="w-[160px]">Category</TableHead>
+                <TableHead className="w-[160px]">Brand</TableHead>
+                <TableHead className="w-[120px] text-center">
+                  Discount
                 </TableHead>
-
-                <TableHead className="text-xs font-semibold uppercase tracking-wider text-slate-500">
-                  Name
-                </TableHead>
-
-                <TableHead className="text-xs font-semibold uppercase tracking-wider text-slate-500 pl-8">
-                  Price
-                </TableHead>
-
-                <TableHead className="text-xs font-semibold uppercase tracking-wider text-slate-500">
-                  Category Name
-                </TableHead>
-
-                <TableHead className="text-xs font-semibold uppercase tracking-wider text-slate-500">
-                  Brand Name
-                </TableHead>
-
-                <TableHead className="text-xs font-semibold uppercase tracking-wider text-slate-500">
-                  Discount (%)
-                </TableHead>
-
-                <TableHead className="text-xs font-semibold uppercase tracking-wider text-slate-500">
-                  Stock
-                </TableHead>
-
-                <TableHead className="text-xs font-semibold uppercase tracking-wider text-slate-500">
-                  Rating
-                </TableHead>
-
-                <TableHead className="text-xs font-semibold uppercase tracking-wider text-slate-500">
-                  Status
-                </TableHead>
-
-                <TableHead className="text-center text-xs font-semibold uppercase tracking-wider text-slate-500">
-                  Actions
-                </TableHead>
+                <TableHead className="w-[120px] text-center">Stock</TableHead>
+                <TableHead className="w-[100px] text-center">Rating</TableHead>
+                <TableHead className="w-[100px] text-center">Status</TableHead>
+                <TableHead className="w-[150px] text-center">Actions</TableHead>
               </TableRow>
             </TableHeader>
-
             <TableBody>
               {isFetchingProducts ? (
                 <TableRow>
-                  <TableCell colSpan={11} className="py-20">
+                  <TableCell colSpan={10} className="py-20 text-center">
                     <div className="flex flex-col items-center gap-3">
                       <Loader2Icon className="h-6 w-6 animate-spin text-slate-400" />
-                      <p className="text-sm font-medium text-slate-600">
+                      <p className="text-sm text-slate-500">
                         Loading products...
                       </p>
                     </div>
@@ -278,204 +259,174 @@ const Products = () => {
                 </TableRow>
               ) : filteredProducts.length === 0 ? (
                 <TableRow>
-                  <TableCell colSpan={11} className="py-20 text-center">
-                    <div className="space-y-2">
-                      <p className="text-sm font-medium text-slate-600">
-                        No products found
-                      </p>
-                      <p className="text-xs text-slate-400">
-                        Try creating a new products
-                      </p>
-                    </div>
+                  <TableCell colSpan={10} className="py-20 text-center">
+                    <p className="text-sm font-medium text-slate-600">
+                      No products found
+                    </p>
+                    <p className="mt-1 text-xs text-slate-400">
+                      Try creating a new product
+                    </p>
                   </TableCell>
                 </TableRow>
               ) : (
-                filteredProducts.map((product) => (
-                  <TableRow
-                    key={product._id}
-                    className="group border-t border-slate-100 transition hover:bg-slate-50/70"
-                  >
-                    <TableCell className="text-center">
-                      <input
-                        type="checkbox"
-                        checked={selectedProducts.includes(product._id)}
-                        onChange={() => toggleSelection(product._id)}
-                        className="h-4 w-4 rounded border-slate-300 text-emerald-600"
-                      />
-                    </TableCell>
+                filteredProducts.map((product) => {
+                  const stockStatus = getStocks(product);
+                  const productStatus = getProductStatus(product);
 
-                    <TableCell className="text-center">
-                      <img
-                        src={product.images?.[0]?.url || defaultAvatar}
-                        alt={product.name}
-                        className="mx-auto h-11 w-11 rounded-full object-cover ring-2 ring-slate-100"
-                      />
-                    </TableCell>
+                  return (
+                    <TableRow
+                      key={product._id}
+                      className="border-b border-slate-100 hover:bg-slate-50"
+                    >
+                      <TableCell className="text-center">
+                        <input
+                          type="checkbox"
+                          checked={selectedProducts.includes(product._id)}
+                          onChange={() => toggleSelection(product._id)}
+                          className="h-4 w-4 rounded border-slate-300"
+                        />
+                      </TableCell>
 
-                    <TableCell className="max-w-[120px]">
-                      <div className="flex items-center gap-3">
-                        <div className="min-w-0 flex flex-col">
-                          <span className="truncate text-sm font-medium text-slate-900">
-                            {product.name}
-                          </span>
-                          <span className="text-xs text-slate-400">
-                            Product Name
-                          </span>
+                      <TableCell>
+                        <div className="flex items-center gap-3">
+                          <img
+                            src={product.images?.[0]?.url || defaultAvatar}
+                            alt={product.name}
+                            className="h-12 w-12 rounded-xl border object-cover"
+                          />
+
+                          <div className="min-w-0">
+                            <p className="truncate text-sm font-semibold text-slate-900">
+                              {product.name}
+                            </p>
+                            <p className="truncate text-xs text-slate-400">
+                              ID: {product._id?.slice(0, 8) || "N/A"}
+                            </p>
+                          </div>
                         </div>
-                      </div>
-                    </TableCell>
+                      </TableCell>
 
-                    <TableCell>
-                      <div className="flex items-center justify-center">
-                        <span className="inline-flex items-center gap-1 rounded-full bg-emerald-50 px-3 py-1 text-xs font-semibold text-emerald-700 ring-1 ring-emerald-200">
-                          ₹ {product.price}
+                      <TableCell className="text-center font-medium">
+                        ₹{product.price}
+                      </TableCell>
+
+                      <TableCell>
+                        <span className="rounded-full bg-emerald-50 px-3 py-1 text-xs font-medium text-emerald-700">
+                          {product.category?.name || "No Category"}
                         </span>
-                      </div>
-                    </TableCell>
-                    <TableCell>
-                      <span className="inline-flex max-w-[140px] items-center gap-2 overflow-hidden whitespace-nowrap truncate rounded-full border border-emerald-200 bg-emerald-50 px-3 py-1 text-xs font-medium text-emerald-700">
-                        <span className="h-2 w-2 flex-shrink-0 rounded-full bg-emerald-500" />
-                        <span className="truncate">
-                          {product?.category?.name || "No Category"}
-                        </span>
-                      </span>
-                    </TableCell>
-                    <TableCell>
-                      <span className="inline-flex max-w-[140px] items-center gap-2 overflow-hidden whitespace-nowrap truncate rounded-full border border-emerald-200 bg-emerald-50 px-3 py-1 text-xs font-medium text-emerald-700">
-                        <span className="h-2 w-2 flex-shrink-0 rounded-full bg-emerald-500" />
-                        <span className="truncate">
+                      </TableCell>
+
+                      <TableCell>
+                        <span className="rounded-full bg-blue-50 px-3 py-1 text-xs font-medium text-blue-700 capitalize">
                           {product.brand?.name || "No Brand"}
                         </span>
-                      </span>
-                    </TableCell>
+                      </TableCell>
 
-                    <TableCell>
-                      {product.discountPercentage > 0 ? (
-                        <span className="inline-flex items-center gap-1.5 rounded-full border border-emerald-200 bg-emerald-50 px-3 py-1 text-xs font-semibold text-emerald-700">
-                          <span className="h-2 w-2 rounded-full bg-emerald-500" />
-                          {product.discountPercentage}% OFF
-                        </span>
-                      ) : (
-                        <span className="inline-flex items-center gap-1.5 rounded-full border border-slate-200 bg-slate-50 px-3 py-1 text-xs font-medium text-slate-500">
-                          No Discount
-                        </span>
-                      )}
-                    </TableCell>
-
-                    <TableCell>
-                      {(() => {
-                        const status = getStocks(product);
-
-                        const base =
-                          "inline-flex items-center gap-1.5 rounded-full px-3 py-1 text-xs font-medium border";
-
-                        const styles: Record<string, string> = {
-                          "in-stock":
-                            "bg-emerald-50 text-emerald-700 border-emerald-200",
-                          "out-of-stock":
-                            "bg-red-50 text-red-700 border-red-200",
-                        };
-
-                        const labels: Record<string, string> = {
-                          "in-stock": "In Stock",
-                          "out-of-stock": "Out of Stock",
-                        };
-
-                        const dotColor: Record<string, string> = {
-                          "in-stock": "bg-emerald-500",
-                          "out-of-stock": "bg-red-500",
-                        };
-
-                        return (
-                          <span className={`${base} ${styles[status]}`}>
-                            <span
-                              className={`h-2 w-2 rounded-full ${dotColor[status]}`}
-                            />
-                            {labels[status]}
+                      <TableCell className="text-center">
+                        {product.discountPercentage > 0 ? (
+                          <span className="rounded-full bg-green-50 px-3 py-1 text-xs font-semibold text-green-700">
+                            {product.discountPercentage}% OFF
                           </span>
-                        );
-                      })()}
-                    </TableCell>
+                        ) : (
+                          <span className="text-xs text-slate-400">
+                            No Discount
+                          </span>
+                        )}
+                      </TableCell>
 
-                    <TableCell>
-                      {product.averageRating ? (
-                        <div className="inline-flex items-center gap-2 rounded-full border border-yellow-200 bg-yellow-50 px-3 py-1 text-xs font-semibold text-yellow-700">
-                          ⭐ {product.averageRating.toFixed(1)}
+                      <TableCell className="text-center">
+                        <span
+                          className={`rounded-full px-3 py-1 text-xs font-medium ${
+                            stockStatus === "in-stock"
+                              ? "bg-emerald-50 text-emerald-700"
+                              : "bg-red-50 text-red-700"
+                          }`}
+                        >
+                          {stockStatus === "in-stock"
+                            ? "In Stock"
+                            : "Out of Stock"}
+                        </span>
+                      </TableCell>
+
+                      <TableCell className="text-center">
+                        {product.averageRating ? (
+                          <span className="rounded-full bg-yellow-50 px-3 py-1 text-xs font-medium text-yellow-700">
+                            ⭐ {product.averageRating.toFixed(1)}
+                          </span>
+                        ) : (
+                          <span className="text-xs text-slate-400">
+                            No Ratings
+                          </span>
+                        )}
+                      </TableCell>
+
+                      <TableCell className="text-center">
+                        <span
+                          className={`rounded-full px-3 py-1 text-xs font-medium ${
+                            productStatus === "active"
+                              ? "bg-emerald-50 text-emerald-700"
+                              : "bg-slate-100 text-slate-600"
+                          }`}
+                        >
+                          {productStatus === "active" ? "Active" : "Deleted"}
+                        </span>
+                      </TableCell>
+
+                      <TableCell>
+                        <div className="flex items-center justify-center gap-2">
+                          {!product.isDeleted ? (
+                            <>
+                              <ViewButton
+                                onClick={() => {
+                                  setViewProduct(product);
+                                  setViewOpen(true);
+                                }}
+                              />
+
+                              <EditButton
+                                onClick={() =>
+                                  navigate(
+                                    `/dashboard/products/edit/${product._id}`,
+                                  )
+                                }
+                              />
+
+                              <DeleteButton
+                                onClick={() => {
+                                  setSelectedProduct(product);
+                                  setOpen(true);
+                                }}
+                              />
+                            </>
+                          ) : (
+                            <button
+                              onClick={async () => {
+                                await handleBulkRestore([product._id]);
+
+                                await refetch({
+                                  page,
+                                  limit: 10,
+                                  search,
+                                });
+                              }}
+                              className="inline-flex items-center gap-2 rounded-xl border border-emerald-200 bg-emerald-50 px-4 py-2.5 text-sm font-medium text-emerald-700 transition-all hover:bg-emerald-100"
+                            >
+                              <RotateCcw size={16} />
+                              Restore
+                            </button>
+                          )}
                         </div>
-                      ) : (
-                        <span className="inline-flex items-center gap-1.5 rounded-full border border-slate-200 bg-slate-50 px-3 py-1 text-xs text-slate-500">
-                          No Ratings
-                        </span>
-                      )}
-                    </TableCell>
-
-                    <TableCell>
-                      {(() => {
-                        const status = getProductStatus(product);
-                        const base =
-                          "inline-flex items-center gap-1.5 rounded-full px-3 py-1 text-xs font-medium border transition";
-                        const styles = {
-                          deleted:
-                            "bg-slate-100 text-slate-600 border-slate-200",
-                          active:
-                            "bg-emerald-50 text-emerald-700 border-emerald-200",
-                        };
-
-                        const labels = {
-                          deleted: "Deleted",
-                          active: "Active",
-                        };
-
-                        return (
-                          <span className={`${base} ${styles[status]}`}>
-                            <span
-                              className={`h-2 w-2 rounded-full ${
-                                status === "deleted"
-                                  ? "bg-slate-400"
-                                  : status === "active" && "bg-emerald-500"
-                              }`}
-                            />
-
-                            {labels[status]}
-                          </span>
-                        );
-                      })()}
-                    </TableCell>
-
-                    <TableCell>
-                      <div className="flex items-center justify-center gap-2 opacity-70 transition group-hover:opacity-100">
-                        <EditButton
-                          onClick={() =>
-                            navigate(`/dashboard/products/edit/${product._id}`)
-                          }
-                        />
-
-                        <DeleteButton
-                          onClick={() => {
-                            setSelectedProduct(product);
-                            setOpen(true);
-                          }}
-                        />
-
-                        {/* VIEW */}
-                        <ViewButton
-                          onClick={() => {
-                            setViewProduct(product);
-                            setViewOpen(true);
-                          }}
-                        />
-                      </div>
-                    </TableCell>
-                  </TableRow>
-                ))
+                      </TableCell>
+                    </TableRow>
+                  );
+                })
               )}
             </TableBody>
           </Table>
-
           {/* ================= SINGLE DELETE CONFIRMATION ================= */}
           <ConfirmModal
             open={open}
-            userName={`${selectedProducts.length} products`}
+            userName={selectedProduct?.name || "product"}
             onClose={() => {
               setOpen(false);
               setSelectedProduct(null);
@@ -490,7 +441,6 @@ const Products = () => {
             }}
             loading={loading}
           />
-
           {/* ================= BULK DELETE CONFIRMATION ================= */}
           <ConfirmModal
             open={bulkDeleteOpen}
@@ -500,9 +450,8 @@ const Products = () => {
               await handleBulkDeleteClick();
               setBulkDeleteOpen(false);
             }}
-            loading={loading}
+            loading={bulkLoading}
           />
-
           {/* ================= PERMANENT DELETE CONFIRMATION ================= */}
           <ConfirmModal
             open={permanentDeleteOpen}
@@ -512,9 +461,8 @@ const Products = () => {
               await handlePermanentDeleteClick();
               setPermanentDeleteOpen(false);
             }}
-            loading={loading}
+            loading={bulkLoading}
           />
-
           {/* ================= VIEW BRAND ================= */}
           <ViewProduct
             product={viewProduct}
@@ -524,7 +472,6 @@ const Products = () => {
             }}
           />
         </div>
-
         {/* ================= PAGINATION ================= */}
         <Pagination
           page={page}

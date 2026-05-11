@@ -13,6 +13,7 @@ export type Category = {
   isActive: boolean;
   isDeleted?: boolean;
   createdAt: string;
+  updatedAt: string;
 };
 
 export type CreateCategoryPayload = {

@@ -1,4 +1,4 @@
-import { useState, useMemo } from "react";
+import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 
 import { Header } from "@/components/dashbaord/Header";
@@ -44,6 +44,9 @@ const Categories = () => {
   const navigate = useNavigate();
 
   // ================= STATE =================
+  const [selectedCategories, setSelectedCategories] = useState<string[]>([]);
+  const [search, setSearch] = useState("");
+
   const [open, setOpen] = useState(false);
   const [selectedCategory, setSelectedCategory] = useState<any>(null);
 
@@ -52,9 +55,6 @@ const Categories = () => {
 
   const [bulkDeleteOpen, setBulkDeleteOpen] = useState(false);
   const [permanentDeleteOpen, setPermanentDeleteOpen] = useState(false);
-
-  const [selectedCategories, setSelectedCategories] = useState<string[]>([]);
-  const [search, setSearch] = useState("");
 
   // ================= DATA =================
   const {
@@ -69,26 +69,26 @@ const Categories = () => {
 
   const { handleDeleteCategory } = useDeleteCategory();
 
-  const { handleBulkDelete, handleBulkRestore, handleBulkPermanentDelete } =
-    useCategoryBulkActions();
+  const {
+    handleBulkDelete,
+    handleBulkRestore,
+    handleBulkPermanentDelete,
+    loading: bulkLoading,
+  } = useCategoryBulkActions();
 
   // ================= FILTER =================
-  const filteredCategories = useMemo(() => {
-    return categories.filter((category) =>
-      category.name.toLowerCase().includes(search.toLowerCase()),
-    );
-  }, [categories, search]);
+  const filteredCategories = categories;
 
   // ================= SELECTION =================
   const toggleSelectAll = () => {
     if (selectedCategories.length === filteredCategories.length) {
       setSelectedCategories([]);
     } else {
-      setSelectedCategories(filteredCategories.map((category) => category._id));
+      setSelectedCategories(filteredCategories.map((item) => item._id));
     }
   };
 
-  const toggleCategorySelection = (id: string) => {
+  const toggleSelection = (id: string) => {
     setSelectedCategories((prev) =>
       prev.includes(id)
         ? prev.filter((categoryId) => categoryId !== id)
@@ -96,115 +96,168 @@ const Categories = () => {
     );
   };
 
-  // ================= BULK ACTIONS =================
-  const handleRestoreClick = async () => {
-    await handleBulkRestore(selectedCategories);
-    setSelectedCategories([]);
-  };
-
-  const handleBulkDeleteClick = async () => {
-    await handleBulkDelete(selectedCategories);
-    setSelectedCategories([]);
-  };
-
-  const handlePermanentDeleteClick = async () => {
-    await handleBulkPermanentDelete(selectedCategories);
-    setSelectedCategories([]);
-  };
-
-  // ================= HELPERS =================
   const isAllSelected =
     filteredCategories.length > 0 &&
     selectedCategories.length === filteredCategories.length;
 
+  // ================= STATUS =================
   const getCategoryStatus = (category: any) => {
     if (category.isDeleted) return "deleted";
     if (category.isActive) return "active";
     return "inactive";
   };
 
+  // ================= BULK ACTIONS =================
+  const handleRestoreClick = async () => {
+    await handleBulkRestore(selectedCategories);
+
+    await refetch({
+      page,
+      limit: 10,
+      search,
+    });
+
+    setSelectedCategories([]);
+  };
+
+  const handleBulkDeleteClick = async () => {
+    await handleBulkDelete(selectedCategories);
+
+    await refetch({
+      page,
+      limit: 10,
+      search,
+    });
+
+    setSelectedCategories([]);
+  };
+
+  const handlePermanentDeleteClick = async () => {
+    await handleBulkPermanentDelete(selectedCategories);
+
+    await refetch({
+      page,
+      limit: 10,
+      search,
+    });
+
+    setSelectedCategories([]);
+  };
+
+  // ================= SEARCH REFETCH =================
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      refetch({
+        page: 1,
+        limit: 10,
+        search,
+      });
+    }, 500);
+
+    return () => clearTimeout(timer);
+  }, [search, refetch]);
+
   return (
     <div className="space-y-6">
       {/* ================= HEADER ================= */}
       <Header
         title="Categories Management"
-        description="Manage product categories and visibility."
+        description="Manage categories, visibility and status."
         icon={Tag}
         actionLabel="Add Category"
         actionIcon={FiPlus}
         onAction={() => navigate("/dashboard/categories/create")}
         refreshIcon={FiRefreshCw}
-        onRefresh={refetch}
+        onRefresh={() =>
+          refetch({
+            page,
+            limit: 10,
+            search,
+          })
+        }
         isRefreshing={loading}
       />
 
       {/* ================= SEARCH ================= */}
-      <div className="rounded-2xl border bg-white px-4 py-3 shadow-sm">
-        <div className="relative w-full max-w-sm">
+      <div className="rounded-2xl border border-slate-200 bg-white px-4 py-4 shadow-sm">
+        <div className="relative w-full max-w-md">
+          <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400" />
+
           <input
+            type="text"
             value={search}
             onChange={(e) => setSearch(e.target.value)}
-            placeholder="Search categories..."
-            className="w-full rounded-xl border border-slate-200 bg-white py-2.5 pl-10 pr-4 text-sm outline-none transition focus:border-emerald-500 focus:ring-2 focus:ring-emerald-100"
+            placeholder="Search categories by name..."
+            className="w-full rounded-xl border border-slate-200 bg-slate-50 py-3 pl-10 pr-10 text-sm text-slate-700 outline-none transition-all placeholder:text-slate-400 focus:border-emerald-500 focus:bg-white focus:ring-2 focus:ring-emerald-100"
           />
-          <Search className="absolute left-3 top-3 h-4 w-4 text-slate-400" />
+
+          {search && (
+            <button
+              onClick={() => setSearch("")}
+              className="absolute right-3 top-1/2 -translate-y-1/2 rounded-full p-1 text-slate-400 hover:bg-slate-100"
+            >
+              ✕
+            </button>
+          )}
         </div>
       </div>
 
-      {/* ================= TABLE WRAPPER ================= */}
-      <div className="overflow-hidden rounded-3xl border border-slate-200 bg-white shadow-sm">
+      {/* ================= TABLE SECTION ================= */}
+      <div className="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm">
         {/* ================= BULK TOOLBAR ================= */}
         {selectedCategories.length > 0 && (
-          <div className="border-b border-slate-100 px-6 py-4">
-            <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
-              <div className="flex items-center gap-3">
-                <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-emerald-50">
-                  <span className="text-sm font-bold text-emerald-600">
+          <div className="sticky top-0 z-20 border-b border-slate-200 bg-white/95 px-6 py-4 backdrop-blur-md">
+            <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
+              <div className="flex items-center gap-4">
+                <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-emerald-100">
+                  <span className="text-base font-bold text-emerald-700">
                     {selectedCategories.length}
                   </span>
                 </div>
 
                 <div>
                   <h3 className="text-sm font-semibold text-slate-900">
-                    {selectedCategories.length} Categories Selected
+                    {selectedCategories.length} Categor
+                    {selectedCategories.length > 1 ? "ies" : "y"} Selected
                   </h3>
+
                   <p className="text-xs text-slate-500">
-                    Perform bulk actions on selected categories
+                    Manage selected categories with bulk actions
                   </p>
                 </div>
               </div>
 
               <div className="flex flex-wrap items-center gap-3">
                 <button
+                  onClick={handleRestoreClick}
+                  className="inline-flex items-center gap-2 rounded-xl border border-emerald-200 bg-emerald-50 px-4 py-2.5 text-sm font-medium text-emerald-700 hover:bg-emerald-100"
+                >
+                  <RotateCcw size={16} />
+                  Restore
+                </button>
+
+                <button
                   onClick={() => setBulkDeleteOpen(true)}
-                  className="flex items-center gap-2 rounded-xl bg-red-600 px-4 py-2.5 text-sm font-medium text-white shadow-sm transition hover:bg-red-700"
+                  className="inline-flex items-center gap-2 rounded-xl bg-amber-500 px-4 py-2.5 text-sm font-medium text-white hover:bg-amber-600"
                 >
                   <Trash2 size={16} />
-                  Delete Selected
+                  Delete
                 </button>
 
                 <button
                   onClick={() => setPermanentDeleteOpen(true)}
-                  className="flex items-center gap-2 rounded-xl border border-red-200 bg-red-50 px-4 py-2.5 text-sm font-medium text-red-600 transition hover:bg-red-100"
+                  className="inline-flex items-center gap-2 rounded-xl bg-red-600 px-4 py-2.5 text-sm font-medium text-white hover:bg-red-700"
                 >
                   <Trash size={16} />
                   Permanent Delete
                 </button>
 
                 <button
-                  onClick={handleRestoreClick}
-                  className="flex items-center gap-2 rounded-xl border border-emerald-200 bg-emerald-50 px-4 py-2.5 text-sm font-medium text-emerald-600 hover:bg-emerald-100"
-                >
-                  <RotateCcw size={16} />
-                  Restore Selected
-                </button>
-
-                <button
                   onClick={() => setSelectedCategories([])}
-                  className="flex items-center gap-2 rounded-xl border border-slate-200 px-4 py-2.5 text-sm font-medium text-slate-600 transition hover:bg-slate-50"
+                  className="inline-flex items-center gap-2 rounded-xl border border-slate-200 bg-white px-4 py-2.5 text-sm font-medium text-slate-700 hover:bg-slate-50"
                 >
                   <XCircle size={16} />
-                  Clear Selection
+                  Clear
                 </button>
               </div>
             </div>
@@ -212,44 +265,35 @@ const Categories = () => {
         )}
 
         {/* ================= TABLE ================= */}
-        <div className="overflow-x-auto">
-          <Table>
+        <div className="overflow-x-auto rounded-2xl border border-slate-200">
+          <Table className="min-w-[900px]">
             <TableHeader>
-              <TableRow className="bg-slate-50 hover:bg-slate-50">
+              <TableRow className="h-14 bg-slate-50 hover:bg-slate-50">
                 <TableHead className="w-[50px] text-center">
                   <input
                     type="checkbox"
                     checked={isAllSelected}
                     onChange={toggleSelectAll}
-                    className="h-4 w-4 rounded border-slate-300 text-emerald-600"
+                    className="h-4 w-4 rounded border-slate-300"
                   />
                 </TableHead>
 
-                <TableHead className="text-center text-xs font-semibold uppercase tracking-wider text-slate-500">
-                  Image
-                </TableHead>
-
-                <TableHead className="text-xs font-semibold uppercase tracking-wider text-slate-500">
-                  Category
-                </TableHead>
-
-                <TableHead className="text-xs font-semibold uppercase tracking-wider text-slate-500">
-                  Status
-                </TableHead>
-
-                <TableHead className="text-center text-xs font-semibold uppercase tracking-wider text-slate-500">
-                  Actions
-                </TableHead>
+                <TableHead>Category</TableHead>
+                <TableHead>Category Type</TableHead>
+                <TableHead>Created At</TableHead>
+                <TableHead>Updated At</TableHead>
+                <TableHead className="text-center">Status</TableHead>
+                <TableHead className="text-center">Actions</TableHead>
               </TableRow>
             </TableHeader>
 
             <TableBody>
               {isFetchingCategories ? (
                 <TableRow>
-                  <TableCell colSpan={5} className="py-20">
+                  <TableCell colSpan={7} className="py-20 text-center">
                     <div className="flex flex-col items-center gap-3">
                       <Loader2Icon className="h-6 w-6 animate-spin text-slate-400" />
-                      <p className="text-sm font-medium text-slate-600">
+                      <p className="text-sm text-slate-500">
                         Loading categories...
                       </p>
                     </div>
@@ -257,111 +301,156 @@ const Categories = () => {
                 </TableRow>
               ) : filteredCategories.length === 0 ? (
                 <TableRow>
-                  <TableCell colSpan={5} className="py-20 text-center">
-                    <div className="space-y-2">
-                      <p className="text-sm font-medium text-slate-600">
-                        No categories found
-                      </p>
-                      <p className="text-xs text-slate-400">
-                        Try creating a new category
-                      </p>
-                    </div>
+                  <TableCell colSpan={7} className="py-20 text-center">
+                    <p className="text-sm font-medium text-slate-600">
+                      No categories found
+                    </p>
+                    <p className="mt-1 text-xs text-slate-400">
+                      Try creating a new category
+                    </p>
                   </TableCell>
                 </TableRow>
               ) : (
-                filteredCategories.map((category) => (
-                  <TableRow
-                    key={category._id}
-                    className="group border-t border-slate-100 transition hover:bg-slate-50/70"
-                  >
-                    <TableCell className="text-center">
-                      <input
-                        type="checkbox"
-                        checked={selectedCategories.includes(category._id)}
-                        onChange={() => toggleCategorySelection(category._id)}
-                        className="h-4 w-4 rounded border-slate-300 text-emerald-600"
-                      />
-                    </TableCell>
+                filteredCategories.map((category) => {
+                  const status = getCategoryStatus(category);
 
-                    <TableCell className="text-center">
-                      <img
-                        src={category.image?.url || defaultAvatar}
-                        alt={category.name}
-                        className="mx-auto h-11 w-11 rounded-full object-cover ring-2 ring-slate-100"
-                      />
-                    </TableCell>
+                  return (
+                    <TableRow
+                      key={category._id}
+                      className="border-b border-slate-100 hover:bg-slate-50"
+                    >
+                      <TableCell className="text-center">
+                        <input
+                          type="checkbox"
+                          checked={selectedCategories.includes(category._id)}
+                          onChange={() => toggleSelection(category._id)}
+                          className="h-4 w-4 rounded border-slate-300"
+                        />
+                      </TableCell>
 
-                    <TableCell>
-                      <span className="inline-flex items-center gap-2 rounded-full border border-slate-200 bg-slate-50 px-3 py-1 text-xs text-slate-600">
-                        {category.name}
-                      </span>
-                    </TableCell>
+                      <TableCell>
+                        <div className="flex items-center gap-3">
+                          <img
+                            src={category.image?.url || defaultAvatar}
+                            alt={category.name}
+                            className="h-12 w-12 rounded-xl border object-cover"
+                          />
 
-                    <TableCell>
-                      {(() => {
-                        const status = getCategoryStatus(category);
+                          <div>
+                            <p className="text-sm font-semibold text-slate-900">
+                              {category.name}
+                            </p>
+                            <p className="text-xs text-slate-400">
+                              ID: {category._id.slice(0, 8)}
+                            </p>
+                          </div>
+                        </div>
+                      </TableCell>
 
-                        const base =
-                          "inline-flex items-center gap-1.5 rounded-full px-3 py-1 text-xs font-medium border";
-
-                        const styles = {
-                          deleted:
-                            "bg-slate-100 text-slate-600 border-slate-200",
-                          active:
-                            "bg-emerald-50 text-emerald-700 border-emerald-200",
-                          inactive: "bg-red-50 text-red-700 border-red-200",
-                        };
-
-                        const labels = {
-                          deleted: "Deleted",
-                          active: "Active",
-                          inactive: "Inactive",
-                        };
-
-                        return (
-                          <span className={`${base} ${styles[status]}`}>
-                            <span
-                              className={`h-2 w-2 rounded-full ${
-                                status === "deleted"
-                                  ? "bg-slate-400"
-                                  : status === "active"
-                                    ? "bg-emerald-500"
-                                    : "bg-red-500"
-                              }`}
-                            />
-                            {labels[status]}
+                      <TableCell>
+                        <div className="flex">
+                          <span className="inline-flex items-center rounded-full bg-purple-50 px-3 py-1 text-xs font-semibold text-purple-700 ring-1 ring-purple-100">
+                            {category.categoryType}
                           </span>
-                        );
-                      })()}
-                    </TableCell>
+                        </div>
+                      </TableCell>
 
-                    <TableCell>
-                      <div className="flex items-center justify-center gap-2 opacity-70 transition group-hover:opacity-100">
-                        <EditButton
-                          onClick={() =>
-                            navigate(
-                              `/dashboard/categories/edit/${category._id}`,
-                            )
-                          }
-                        />
+                      <TableCell>
+                        <div className="flex">
+                          <span className="inline-flex items-center text-sm font-medium text-slate-700">
+                            {new Date(category.createdAt).toLocaleDateString(
+                              "en-IN",
+                              {
+                                day: "2-digit",
+                                month: "short",
+                                year: "numeric",
+                              },
+                            )}
+                          </span>
+                        </div>
+                      </TableCell>
 
-                        <DeleteButton
-                          onClick={() => {
-                            setSelectedCategory(category);
-                            setOpen(true);
-                          }}
-                        />
+                      <TableCell>
+                        <div className="flex">
+                          <span className="inline-flex items-center text-sm font-medium text-slate-700">
+                            {new Date(category.updatedAt).toLocaleDateString(
+                              "en-IN",
+                              {
+                                day: "2-digit",
+                                month: "short",
+                                year: "numeric",
+                              },
+                            )}
+                          </span>
+                        </div>
+                      </TableCell>
 
-                        <ViewButton
-                          onClick={() => {
-                            setViewCategory(category);
-                            setViewOpen(true);
-                          }}
-                        />
-                      </div>
-                    </TableCell>
-                  </TableRow>
-                ))
+                      <TableCell className="text-center">
+                        <span
+                          className={`rounded-full px-3 py-1 text-xs font-medium ${
+                            status === "active"
+                              ? "bg-emerald-50 text-emerald-700"
+                              : status === "deleted"
+                                ? "bg-slate-100 text-slate-600"
+                                : "bg-red-50 text-red-700"
+                          }`}
+                        >
+                          {status === "active"
+                            ? "Active"
+                            : status === "deleted"
+                              ? "Deleted"
+                              : "Inactive"}
+                        </span>
+                      </TableCell>
+
+                      <TableCell>
+                        <div className="flex items-center justify-center gap-2">
+                          {!category.isDeleted ? (
+                            <>
+                              <ViewButton
+                                onClick={() => {
+                                  setViewCategory(category);
+                                  setViewOpen(true);
+                                }}
+                              />
+
+                              <EditButton
+                                onClick={() =>
+                                  navigate(
+                                    `/dashboard/categories/edit/${category._id}`,
+                                  )
+                                }
+                              />
+
+                              <DeleteButton
+                                onClick={() => {
+                                  setSelectedCategory(category);
+                                  setOpen(true);
+                                }}
+                              />
+                            </>
+                          ) : (
+                            <button
+                              onClick={async () => {
+                                await handleBulkRestore([category._id]);
+
+                                await refetch({
+                                  page,
+                                  limit: 10,
+                                  search,
+                                });
+                              }}
+                              className="inline-flex items-center gap-2 rounded-xl border border-emerald-200 bg-emerald-50 px-4 py-2.5 text-sm font-medium text-emerald-700 hover:bg-emerald-100"
+                            >
+                              <RotateCcw size={16} />
+                              Restore
+                            </button>
+                          )}
+                        </div>
+                      </TableCell>
+                    </TableRow>
+                  );
+                })
               )}
             </TableBody>
           </Table>
@@ -369,7 +458,7 @@ const Categories = () => {
           {/* SINGLE DELETE */}
           <ConfirmModal
             open={open}
-            userName={selectedCategory?.name || ""}
+            userName={selectedCategory?.name || "category"}
             onClose={() => {
               setOpen(false);
               setSelectedCategory(null);
@@ -394,7 +483,7 @@ const Categories = () => {
               await handleBulkDeleteClick();
               setBulkDeleteOpen(false);
             }}
-            loading={loading}
+            loading={bulkLoading}
           />
 
           {/* PERMANENT DELETE */}
@@ -406,7 +495,7 @@ const Categories = () => {
               await handlePermanentDeleteClick();
               setPermanentDeleteOpen(false);
             }}
-            loading={loading}
+            loading={bulkLoading}
           />
 
           {/* VIEW CATEGORY */}
@@ -420,12 +509,17 @@ const Categories = () => {
           />
         </div>
 
-        {/* PAGINATION */}
         <Pagination
           page={page}
           pages={pages}
           total={total}
-          onChange={(p) => refetch({ page: p })}
+          onChange={(p) =>
+            refetch({
+              page: p,
+              limit: 10,
+              search,
+            })
+          }
         />
       </div>
     </div>

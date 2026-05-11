@@ -8,6 +8,7 @@ type BaseProps = {
   disabled?: boolean;
   label?: string;
   icon?: ReactNode;
+  type?: "button" | "submit" | "reset";
 };
 
 const isDisabled = (loading?: boolean, disabled?: boolean) =>
@@ -139,16 +140,18 @@ export const SaveButton = ({
   disabled,
   label,
   icon,
+  type = "submit",
 }: BaseProps) => {
   const disabledState = isDisabled(loading, disabled);
 
   return (
     <Button
+      type={type}
       onClick={onClick}
       disabled={disabledState}
       className={`
-      flex items-center gap-2
-      px-6 py-2 rounded-xl font-semibold
+      flex w-full items-center justify-center gap-2
+      px-6 py-6 rounded-xl font-semibold
       bg-gradient-to-r from-emerald-500 via-teal-500 to-cyan-600
       text-white
       shadow-md hover:shadow-lg
@@ -159,9 +162,12 @@ export const SaveButton = ({
       ${getStateStyles(disabledState)}
       `}
     >
-      {loading && <Loader2 className="w-4 h-4 animate-spin" />}
-      {!loading && icon && <span className="w-4 h-4">{icon}</span>}
-      {label ? label : "Save"}
+      {loading ? (
+        <Loader2 className="h-4 w-4 animate-spin" />
+      ) : (
+        icon && <span>{icon}</span>
+      )}
+      {label || "Save"}
     </Button>
   );
 };

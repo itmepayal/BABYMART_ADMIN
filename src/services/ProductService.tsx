@@ -18,8 +18,8 @@ export type Product = {
   stock: number;
   averageRating: number;
   isDeleted?: boolean;
-  createdAt?: string;
-  updatedAt?: string;
+  createdAt: string;
+  updatedAt: string;
 };
 
 // ================= PAYLOAD TYPES =================
@@ -87,9 +87,15 @@ export const productService = {
   },
 
   // ================= UPDATE =================
-  updateProduct: async (id: string, payload: any) => {
+  updateProduct: async (id: string, payload: FormData) => {
+    for (const pair of payload.entries()) {
+      console.log(pair[0], pair[1]);
+    }
+
     const { data } = await api.put(`/products/${id}`, payload, {
-      headers: { "Content-Type": "multipart/form-data" },
+      headers: {
+        "Content-Type": "multipart/form-data",
+      },
     });
 
     return data;
