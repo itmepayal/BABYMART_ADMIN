@@ -39,6 +39,7 @@ import { FiPlus, FiRefreshCw } from "react-icons/fi";
 import { defaultAvatar } from "@/assets";
 import { ConfirmModal } from "@/components/dashbaord/ConfirmModal";
 import { ViewBrand } from "@/pages/dashboard/products/brands/ViewBrand";
+import { BrandSkeleton } from "@/components/skeletons/BrandSkeleton";
 
 const Brands = () => {
   const navigate = useNavigate();
@@ -134,10 +135,15 @@ const Brands = () => {
         limit: 10,
         search,
       });
-    }, 500);
+    }, 2000);
 
     return () => clearTimeout(timer);
   }, [search, refetch]);
+
+  /* ================= SKELETON ================= */
+  if (loading) {
+    return <BrandSkeleton />;
+  }
 
   return (
     <div className="space-y-6">

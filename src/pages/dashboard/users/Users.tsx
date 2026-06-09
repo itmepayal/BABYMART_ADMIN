@@ -1,9 +1,9 @@
-import {
-  DeleteButton,
-  EditButton,
-  ViewButton,
-} from "@/components/common/Action";
+import { useMemo, useState } from "react";
+import { useNavigate } from "react-router-dom";
+
 import { Header } from "@/components/dashbaord/Header";
+import { Pagination } from "@/components/dashbaord/Pagination";
+
 import {
   Table,
   TableBody,
@@ -12,30 +12,51 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
+
+import {
+  DeleteButton,
+  EditButton,
+  ViewButton,
+} from "@/components/common/Action";
+
 import { useUsers } from "@/hooks/users/useUsers";
+
 import {
   Loader2Icon,
-  XCircle,
-  Mail,
-  ShieldCheck,
-  User,
   Search,
-  Truck,
   Trash2,
   Trash,
   RotateCcw,
+  XCircle,
+  ShieldCheck,
+  User,
+  Truck,
+  Users,
 } from "lucide-react";
-import { FiRefreshCw, FiUserPlus, FiUsers } from "react-icons/fi";
+
+import { FiRefreshCw, FiUserPlus } from "react-icons/fi";
+
 import { defaultAvatar } from "@/assets";
-import { Pagination } from "@/components/dashbaord/Pagination";
+
 import { ConfirmModal } from "@/components/dashbaord/ConfirmModal";
-import { useState } from "react";
-import type { User as UserType } from "@/types/users";
 import { UserViewModal } from "@/components/dashbaord/UserViewModal";
 import { UserSkeleton } from "@/components/skeletons/UserSkeleton";
-import { useNavigate } from "react-router-dom";
+
+import type { User as UserType } from "@/types/users";
 
 const UsersPage = () => {
+  const navigate = useNavigate();
+
+  // ================= STATE =================
+  const [selectedUsers, setSelectedUsers] = useState<string[]>([]);
+  const [open, setOpen] = useState(false);
+  const [selectedUser, setSelectedUser] = useState<UserType | null>(null);
+  const [viewUser, setViewUser] = useState<UserType | null>(null);
+
+  const [bulkDeleteOpen, setBulkDeleteOpen] = useState(false);
+  const [permanentDeleteOpen, setPermanentDeleteOpen] = useState(false);
+
+  // ================= DATA =================
   const {
     users,
     loading,
@@ -52,49 +73,26 @@ const UsersPage = () => {
     bulkPermanentDeleteUsers,
     bulkDeleteUsers,
   } = useUsers();
-  const navigate = useNavigate();
 
-  const [open, setOpen] = useState(false);
-  const [selectedUser, setSelectedUser] = useState<UserType | null>(null);
-  const [viewUser, setViewUser] = useState<UserType | null>(null);
-  const [bulkDeleteOpen, setBulkDeleteOpen] = useState(false);
-  const [permanentDeleteOpen, setPermanentDeleteOpen] = useState(false);
-  const [selectedUsers, setSelectedUsers] = useState<string[]>([]);
-
-  if (error)
-    return (
-      <div className="flex items-center justify-center p-6">
-        <div className="w-full bg-white border border-red-200 rounded-2xl shadow-sm p-6 text-center">
-          {/* ICON */}
-          <div className="flex items-center justify-center w-12 h-12 mx-auto rounded-full bg-red-100 mb-4">
-            <XCircle className="w-6 h-6 text-red-600" />
-          </div>
-
-          {/* TITLE */}
-          <h2 className="text-lg font-semibold text-gray-900">
-            Something went wrong
-          </h2>
-
-          {/* MESSAGE */}
-          <p className="mt-2 text-sm text-gray-500">{error}</p>
-
-          {/* ACTION */}
-          <button
-            onClick={() => refetch()}
-            className="mt-5 inline-flex items-center gap-2 px-4 py-2 text-sm font-medium rounded-lg bg-red-600 text-white hover:bg-red-700 transition"
-          >
-            <FiRefreshCw className="w-4 h-4" />
-            Retry
-          </button>
-        </div>
-      </div>
+  // ================= FILTER =================
+  const filteredUsers = useMemo(() => {
+    return users.filter((user) =>
+      `${user.firstname} ${user.lastname}`
+        .toLowerCase()
+        .includes(search.toLowerCase()),
     );
+  }, [users, search]);
 
-  if (loading) {
-    return <UserSkeleton />;
-  }
+  // ================= SELECTION =================
+  const toggleSelectAll = () => {
+    if (selectedUsers.length === filteredUsers.length) {
+      setSelectedUsers([]);
+    } else {
+      setSelectedUsers(filteredUsers.map((user) => user._id));
+    }
+  };
 
-  const toggleUserSelection = (id: string) => {
+  const toggleSelection = (id: string) => {
     setSelectedUsers((prev) =>
       prev.includes(id)
         ? prev.filter((userId) => userId !== id)
@@ -102,49 +100,71 @@ const UsersPage = () => {
     );
   };
 
-  const toggleSelectAll = () => {
-    if (selectedUsers.length === users.length) {
-      setSelectedUsers([]);
-    } else {
-      setSelectedUsers(users.map((user) => user._id));
-    }
-  };
+  const isAllSelected =
+    filteredUsers.length > 0 && selectedUsers.length === filteredUsers.length;
 
+  // ================= BULK ACTIONS =================
   const handleBulkDelete = async () => {
-    if (selectedUsers.length === 0) return;
-
     await bulkDeleteUsers(selectedUsers);
     setSelectedUsers([]);
-    setBulkDeleteOpen(false);
   };
 
   const handlePermanentDelete = async () => {
-    if (selectedUsers.length === 0) return;
     await bulkPermanentDeleteUsers(selectedUsers);
     setSelectedUsers([]);
-    setPermanentDeleteOpen(false);
   };
 
   const handleBulkRestore = async () => {
-    if (selectedUsers.length === 0) return;
-
     await bulkRestoreUsers(selectedUsers);
     setSelectedUsers([]);
   };
 
+  // ================= STATUS =================
   const getUserStatus = (user: UserType) => {
     if (user.isDeleted) return "deleted";
     if (user.isBlocked) return "blocked";
     return "active";
   };
 
+  // ================= ERROR =================
+  if (error) {
+    return (
+      <div className="flex items-center justify-center p-6">
+        <div className="w-full rounded-2xl border border-red-200 bg-white p-6 text-center shadow-sm">
+          <div className="mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-full bg-red-100">
+            <XCircle className="h-6 w-6 text-red-600" />
+          </div>
+
+          <h2 className="text-lg font-semibold text-slate-900">
+            Something went wrong
+          </h2>
+
+          <p className="mt-2 text-sm text-slate-500">{error}</p>
+
+          <button
+            onClick={() => refetch()}
+            className="mt-5 inline-flex items-center gap-2 rounded-xl bg-red-600 px-4 py-2.5 text-sm font-medium text-white transition hover:bg-red-700"
+          >
+            <FiRefreshCw className="h-4 w-4" />
+            Retry
+          </button>
+        </div>
+      </div>
+    );
+  }
+
+  // ================= SKELETON =================
+  if (loading) {
+    return <UserSkeleton />;
+  }
+
   return (
     <div className="space-y-6">
-      {/* ================= HEADER ================= */}
+      {/* ================= PAGE HEADER ================= */}
       <Header
         title="Users Management"
-        description="Manage users, roles, and permissions."
-        icon={FiUsers}
+        description="Manage users, roles, permissions, and account access."
+        icon={Users}
         actionLabel="Add User"
         actionIcon={FiUserPlus}
         onAction={() => navigate("/dashboard/users/create")}
@@ -153,10 +173,11 @@ const UsersPage = () => {
         isRefreshing={loading}
       />
 
-      {/* ================= FILTERS ================= */}
-      <div className="flex items-center justify-between gap-3 bg-white py-3 px-3 rounded-2xl border shadow-sm">
-        {/* SEARCH */}
-        <div className="relative w-full max-w-sm">
+      {/* ================= SEARCH BAR ================= */}
+      <div className="rounded-2xl border border-slate-200 bg-white px-4 py-4 shadow-sm">
+        <div className="relative w-full max-w-md">
+          <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400" />
+
           <input
             type="text"
             value={search}
@@ -165,282 +186,273 @@ const UsersPage = () => {
               refetch({ search: e.target.value, page: 1 });
             }}
             placeholder="Search users by name or email..."
-            className="w-full pl-10 pr-3 py-2 text-sm border border-gray-200 rounded-lg bg-white 
-                 focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500
-                 transition"
+            className="w-full rounded-xl border border-slate-200 bg-slate-50 py-3 pl-10 pr-10 text-sm text-slate-700 outline-none transition-all placeholder:text-slate-400 focus:border-emerald-500 focus:bg-white focus:ring-2 focus:ring-emerald-100"
           />
 
-          {/* ICON */}
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400 pointer-events-none" />
+          {search && (
+            <button
+              onClick={() => setSearch("")}
+              className="absolute right-3 top-1/2 -translate-y-1/2 rounded-full p-1 text-slate-400 transition hover:bg-slate-100 hover:text-slate-600"
+            >
+              ✕
+            </button>
+          )}
         </div>
       </div>
-      {/* ================= TABLE ================= */}
-      <div className="overflow-hidden rounded-3xl border border-slate-200 bg-white shadow-sm">
-        {/* TOP BAR */}
-        <div
-          className={`${selectedUsers.length ? "border-b border-slate-100 bg-white px-6 py-4" : "border-b border-slate-100 bg-white"}`}
-        >
-          {selectedUsers.length > 0 && (
-            <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
-              {/* LEFT SECTION */}
-              <div className="flex items-center gap-3">
-                <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-emerald-50">
-                  <span className="text-sm font-bold text-emerald-600">
+
+      {/* ================= TABLE SECTION ================= */}
+      <div className="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm">
+        {/* ================= BULK ACTION TOOLBAR ================= */}
+        {selectedUsers.length > 0 && (
+          <div className="sticky top-0 z-20 border-b border-slate-200 bg-white/95 px-6 py-4 backdrop-blur-md">
+            <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
+              {/* LEFT */}
+              <div className="flex items-center gap-4">
+                <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-emerald-100 shadow-sm">
+                  <span className="text-base font-bold text-emerald-700">
                     {selectedUsers.length}
                   </span>
                 </div>
 
                 <div>
                   <h3 className="text-sm font-semibold text-slate-900">
-                    {selectedUsers.length} User Selected
+                    {selectedUsers.length} User
+                    {selectedUsers.length > 1 ? "s" : ""} Selected
                   </h3>
+
                   <p className="text-xs text-slate-500">
-                    Bulk actions can be performed on selected users
+                    Manage selected users with bulk actions
                   </p>
                 </div>
               </div>
 
-              {/* RIGHT SECTION */}
+              {/* RIGHT */}
               <div className="flex flex-wrap items-center gap-3">
                 <button
+                  onClick={handleBulkRestore}
+                  className="inline-flex items-center gap-2 rounded-xl border border-emerald-200 bg-emerald-50 px-4 py-2.5 text-sm font-medium text-emerald-700 transition hover:bg-emerald-100"
+                >
+                  <RotateCcw size={16} />
+                  Restore
+                </button>
+
+                <button
                   onClick={() => setBulkDeleteOpen(true)}
-                  className="flex items-center gap-2 rounded-xl bg-red-600 px-4 py-2.5 text-sm font-medium text-white shadow-sm transition hover:bg-red-700"
+                  className="inline-flex items-center gap-2 rounded-xl bg-amber-500 px-4 py-2.5 text-sm font-medium text-white shadow-sm transition hover:bg-amber-600"
                 >
                   <Trash2 size={16} />
-                  Delete Selected
+                  Delete
                 </button>
 
                 <button
                   onClick={() => setPermanentDeleteOpen(true)}
-                  className="flex items-center gap-2  rounded-xl border border-red-200 bg-red-50 px-4 py-2.5 text-sm font-medium text-red-600 transition hover:bg-red-100"
+                  className="inline-flex items-center gap-2 rounded-xl bg-red-600 px-4 py-2.5 text-sm font-medium text-white shadow-sm transition hover:bg-red-700"
                 >
                   <Trash size={16} />
                   Permanent Delete
                 </button>
 
                 <button
-                  onClick={handleBulkRestore}
-                  className="flex items-center gap-2 rounded-xl border border-emerald-200 bg-emerald-50 px-4 py-2.5 text-sm font-medium text-emerald-600 hover:bg-emerald-100"
-                >
-                  <RotateCcw size={16} />
-                  Restore Selected
-                </button>
-
-                <button
                   onClick={() => setSelectedUsers([])}
-                  className="flex items-center gap-2  rounded-xl border border-slate-200 px-4 py-2.5 text-sm font-medium text-slate-600 transition hover:bg-slate-50"
+                  className="inline-flex items-center gap-2 rounded-xl border border-slate-200 bg-white px-4 py-2.5 text-sm font-medium text-slate-700 transition hover:bg-slate-50"
                 >
                   <XCircle size={16} />
-                  Clear Selection
+                  Clear
                 </button>
               </div>
             </div>
-          )}
-        </div>
+          </div>
+        )}
 
-        {/* TABLE */}
-        <div className="overflow-x-auto">
-          <Table>
+        {/* ================= TABLE ================= */}
+        <div className="overflow-x-auto rounded-2xl border border-slate-200">
+          <Table className="min-w-[1200px]">
             <TableHeader>
-              <TableRow className="bg-slate-50 hover:bg-slate-50">
+              <TableRow className="h-14! bg-slate-50 hover:bg-slate-50">
                 <TableHead className="w-[50px] text-center">
                   <input
                     type="checkbox"
-                    checked={
-                      users.length > 0 && selectedUsers.length === users.length
-                    }
+                    checked={isAllSelected}
                     onChange={toggleSelectAll}
-                    className="h-4 w-4 rounded border-slate-300 text-emerald-600 focus:ring-emerald-500"
+                    className="h-4 w-4 rounded border-slate-300"
                   />
                 </TableHead>
 
-                <TableHead className="text-center text-xs font-semibold uppercase tracking-wider text-slate-500">
-                  Avatar
-                </TableHead>
+                <TableHead className="min-w-[280px]">User</TableHead>
 
-                <TableHead className="text-xs font-semibold uppercase tracking-wider text-slate-500">
-                  User
-                </TableHead>
+                <TableHead className="min-w-[260px]">Email</TableHead>
 
-                <TableHead className="text-xs font-semibold uppercase tracking-wider text-slate-500">
-                  Email
-                </TableHead>
+                <TableHead className="w-[160px]">Role</TableHead>
 
-                <TableHead className="text-xs font-semibold uppercase tracking-wider text-slate-500">
-                  Role
-                </TableHead>
+                <TableHead className="w-[140px] text-center">Status</TableHead>
 
-                <TableHead className="text-center text-xs font-semibold uppercase tracking-wider text-slate-500">
-                  Status
-                </TableHead>
+                <TableHead className="w-[160px] text-center">Joined</TableHead>
 
-                <TableHead className="text-xs font-semibold uppercase tracking-wider text-slate-500">
-                  Joined
-                </TableHead>
-
-                <TableHead className="text-center text-xs font-semibold uppercase tracking-wider text-slate-500">
-                  Actions
-                </TableHead>
+                <TableHead className="w-[150px] text-center">Actions</TableHead>
               </TableRow>
             </TableHeader>
 
             <TableBody>
               {isFetchingUsers ? (
                 <TableRow>
-                  <TableCell colSpan={8} className="py-20">
+                  <TableCell colSpan={7} className="py-20 text-center">
                     <div className="flex flex-col items-center gap-3">
                       <Loader2Icon className="h-6 w-6 animate-spin text-slate-400" />
-                      <p className="text-sm font-medium text-slate-600">
-                        Loading users...
-                      </p>
+
+                      <p className="text-sm text-slate-500">Loading users...</p>
                     </div>
                   </TableCell>
                 </TableRow>
-              ) : users.length === 0 ? (
+              ) : filteredUsers.length === 0 ? (
                 <TableRow>
-                  <TableCell colSpan={8} className="py-20 text-center">
-                    <div className="space-y-2">
-                      <p className="text-sm font-medium text-slate-600">
-                        No users found
-                      </p>
-                      <p className="text-xs text-slate-400">
-                        Try creating a new user
-                      </p>
-                    </div>
+                  <TableCell colSpan={7} className="py-20 text-center">
+                    <p className="text-sm font-medium text-slate-600">
+                      No users found
+                    </p>
+
+                    <p className="mt-1 text-xs text-slate-400">
+                      Try creating a new user
+                    </p>
                   </TableCell>
                 </TableRow>
               ) : (
-                users.map((user) => (
-                  <TableRow
-                    key={user._id}
-                    className="group border-t border-slate-100 transition hover:bg-slate-50/70"
-                  >
-                    {/* CHECKBOX */}
-                    <TableCell className="text-center">
-                      <input
-                        type="checkbox"
-                        checked={selectedUsers.includes(user._id)}
-                        onChange={() => toggleUserSelection(user._id)}
-                        className="h-4 w-4 rounded border-slate-300 text-emerald-600 focus:ring-emerald-500"
-                      />
-                    </TableCell>
+                filteredUsers.map((user) => {
+                  const userStatus = getUserStatus(user);
 
-                    {/* AVATAR */}
-                    <TableCell className="text-center">
-                      <img
-                        src={user?.avatar?.url || defaultAvatar}
-                        alt="avatar"
-                        className="mx-auto h-11 w-11 rounded-full object-cover ring-2 ring-slate-100"
-                      />
-                    </TableCell>
-
-                    {/* USER */}
-                    <TableCell>
-                      <div>
-                        <p className="font-medium text-slate-900">
-                          {user.firstname} {user.lastname}
-                        </p>
-                        <p className="text-xs text-slate-500">
-                          ID: {user._id.slice(-6)}
-                        </p>
-                      </div>
-                    </TableCell>
-
-                    {/* EMAIL */}
-                    <TableCell>
-                      <span className="inline-flex items-center gap-2 rounded-full border border-slate-200 bg-slate-50 px-3 py-1 text-xs text-slate-600">
-                        <Mail className="h-3.5 w-3.5" />
-                        {user.email}
-                      </span>
-                    </TableCell>
-
-                    {/* ROLE */}
-                    <TableCell>
-                      <span className="inline-flex items-center gap-1.5 rounded-full bg-emerald-50 px-3 py-1 text-xs font-medium text-emerald-700 uppercase">
-                        {user.role === "admin" && <ShieldCheck size={14} />}
-                        {user.role === "user" && <User size={14} />}
-                        {user.role === "deliveryMan" && <Truck size={14} />}
-                        {user.role}
-                      </span>
-                    </TableCell>
-                    {/* STATUS */}
-                    <TableCell className="text-center">
-                      {(() => {
-                        const status = getUserStatus(user);
-
-                        const base =
-                          "inline-flex items-center gap-1.5 rounded-full px-3 py-1 text-xs font-medium border transition";
-
-                        const styles = {
-                          deleted:
-                            "bg-slate-100 text-slate-600 border-slate-200",
-                          blocked: "bg-red-50 text-red-600 border-red-200",
-                          active:
-                            "bg-emerald-50 text-emerald-700 border-emerald-200",
-                        };
-
-                        const labels = {
-                          deleted: "Deleted",
-                          blocked: "Blocked",
-                          active: "Active",
-                        };
-
-                        return (
-                          <span className={`${base} ${styles[status]}`}>
-                            <span
-                              className={`h-2 w-2 rounded-full ${
-                                status === "deleted"
-                                  ? "bg-slate-400"
-                                  : status === "blocked"
-                                    ? "bg-red-500"
-                                    : "bg-emerald-500"
-                              }`}
-                            />
-
-                            {labels[status]}
-                          </span>
-                        );
-                      })()}
-                    </TableCell>
-
-                    {/* DATE */}
-                    <TableCell>
-                      <span className="text-sm text-slate-500">
-                        {new Date(user.createdAt).toLocaleDateString()}
-                      </span>
-                    </TableCell>
-
-                    {/* ACTIONS */}
-                    <TableCell>
-                      <div className="flex items-center justify-center gap-2 opacity-70 transition group-hover:opacity-100">
-                        <EditButton
-                          onClick={() =>
-                            navigate(`/dashboard/users/edit/${user._id}`)
-                          }
+                  return (
+                    <TableRow
+                      key={user._id}
+                      className="border-b border-slate-100 hover:bg-slate-50"
+                    >
+                      {/* CHECKBOX */}
+                      <TableCell className="text-center">
+                        <input
+                          type="checkbox"
+                          checked={selectedUsers.includes(user._id)}
+                          onChange={() => toggleSelection(user._id)}
+                          className="h-4 w-4 rounded border-slate-300"
                         />
+                      </TableCell>
 
-                        <DeleteButton
-                          onClick={() => {
-                            setSelectedUser(user);
-                            setOpen(true);
-                          }}
-                        />
+                      {/* USER */}
+                      <TableCell>
+                        <div className="flex items-center gap-3">
+                          <img
+                            src={user.avatar?.url || defaultAvatar}
+                            alt={user.firstname}
+                            className="h-12 w-12 rounded-xl border object-cover"
+                          />
 
-                        <ViewButton onClick={() => setViewUser(user)} />
-                      </div>
-                    </TableCell>
-                  </TableRow>
-                ))
+                          <div className="min-w-0">
+                            <p className="truncate text-sm font-semibold text-slate-900">
+                              {user.firstname} {user.lastname}
+                            </p>
+
+                            <p className="truncate text-xs text-slate-400">
+                              ID: {user._id?.slice(0, 8)}
+                            </p>
+                          </div>
+                        </div>
+                      </TableCell>
+
+                      {/* EMAIL */}
+                      <TableCell>
+                        <span className="inline-flex items-center gap-2 text-sm text-slate-700">
+                          {user.email}
+                        </span>
+                      </TableCell>
+
+                      {/* ROLE */}
+                      <TableCell>
+                        <span className="inline-flex items-center gap-2 rounded-full bg-emerald-50 px-3 py-1 text-xs font-medium uppercase text-emerald-700">
+                          {user.role === "admin" && <ShieldCheck size={14} />}
+
+                          {user.role === "user" && <User size={14} />}
+
+                          {user.role === "deliveryMan" && <Truck size={14} />}
+
+                          {user.role}
+                        </span>
+                      </TableCell>
+
+                      {/* STATUS */}
+                      <TableCell className="text-center">
+                        <span
+                          className={`rounded-full px-3 py-1 text-xs font-medium ${
+                            userStatus === "active"
+                              ? "bg-emerald-50 text-emerald-700"
+                              : userStatus === "blocked"
+                                ? "bg-red-50 text-red-700"
+                                : "bg-slate-100 text-slate-600"
+                          }`}
+                        >
+                          {userStatus === "active"
+                            ? "Active"
+                            : userStatus === "blocked"
+                              ? "Blocked"
+                              : "Deleted"}
+                        </span>
+                      </TableCell>
+
+                      {/* DATE */}
+                      <TableCell className="text-center">
+                        <span className="text-sm text-slate-500">
+                          {new Date(user.createdAt).toLocaleDateString()}
+                        </span>
+                      </TableCell>
+
+                      {/* ACTIONS */}
+                      <TableCell>
+                        <div className="flex items-center justify-center gap-2">
+                          {!user.isDeleted ? (
+                            <>
+                              <ViewButton onClick={() => setViewUser(user)} />
+
+                              <EditButton
+                                onClick={() =>
+                                  navigate(`/dashboard/users/edit/${user._id}`)
+                                }
+                              />
+
+                              <DeleteButton
+                                onClick={() => {
+                                  setSelectedUser(user);
+                                  setOpen(true);
+                                }}
+                              />
+                            </>
+                          ) : (
+                            <button
+                              onClick={async () => {
+                                await bulkRestoreUsers([user._id]);
+
+                                await refetch({
+                                  page,
+                                  search,
+                                });
+                              }}
+                              className="inline-flex items-center gap-2 rounded-xl border border-emerald-200 bg-emerald-50 px-4 py-2.5 text-sm font-medium text-emerald-700 transition-all hover:bg-emerald-100"
+                            >
+                              <RotateCcw size={16} />
+                              Restore
+                            </button>
+                          )}
+                        </div>
+                      </TableCell>
+                    </TableRow>
+                  );
+                })
               )}
             </TableBody>
           </Table>
-          {/* =================  DELETE MODAL ================= */}
+
+          {/* ================= SINGLE DELETE CONFIRMATION ================= */}
           <ConfirmModal
             open={open}
             userName={
               selectedUser
                 ? `${selectedUser.firstname} ${selectedUser.lastname}`
-                : ""
+                : "user"
             }
             onClose={() => {
               setOpen(false);
@@ -456,33 +468,43 @@ const UsersPage = () => {
             }}
             loading={loading}
           />
-          {/* ================= BULK DELETE MODAL ================= */}
+
+          {/* ================= BULK DELETE CONFIRMATION ================= */}
           <ConfirmModal
             open={bulkDeleteOpen}
             userName={`${selectedUsers.length} users`}
             onClose={() => setBulkDeleteOpen(false)}
-            onConfirm={handleBulkDelete}
+            onConfirm={async () => {
+              await handleBulkDelete();
+              setBulkDeleteOpen(false);
+            }}
             loading={loading}
           />
 
-          {/* ================= PERMANENT DELETE MODAL ================= */}
+          {/* ================= PERMANENT DELETE CONFIRMATION ================= */}
           <ConfirmModal
             open={permanentDeleteOpen}
             userName={`${selectedUsers.length} users`}
             onClose={() => setPermanentDeleteOpen(false)}
-            onConfirm={handlePermanentDelete}
+            onConfirm={async () => {
+              await handlePermanentDelete();
+              setPermanentDeleteOpen(false);
+            }}
             loading={loading}
           />
+
+          {/* ================= VIEW USER ================= */}
           <UserViewModal user={viewUser} onClose={() => setViewUser(null)} />
         </div>
+
+        {/* ================= PAGINATION ================= */}
+        <Pagination
+          page={page}
+          pages={pages}
+          total={total}
+          onChange={(p) => refetch({ page: p })}
+        />
       </div>
-      {/* ================= PAGINATION ================= */}
-      <Pagination
-        page={page}
-        pages={pages}
-        total={total}
-        onChange={(p) => refetch({ page: p })}
-      />
     </div>
   );
 };

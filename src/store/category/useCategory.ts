@@ -104,6 +104,7 @@ export const useCategoryStore = create<CategoryState>((set, get) => ({
 
       set({ loading: false });
     } catch (err: any) {
+      console.log(err.response.data);
       set({
         loading: false,
         error: err?.response?.data?.message || "Create failed",

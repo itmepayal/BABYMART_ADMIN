@@ -1,122 +1,297 @@
 import { createBrowserRouter } from "react-router-dom";
+
 import App from "@/App";
 
-// ================= AUTH =================
+// ======================================================
+// AUTH PAGES
+// ======================================================
 import Login from "@/pages/auth/Login";
 import Register from "@/pages/auth/Register";
 
-// ================= DASHBOARD =================
+// ======================================================
+// DASHBOARD PAGES
+// ======================================================
 import Dashboard from "@/pages/dashboard/Dashboard";
 
-// ================= PRODUCTS =================
+// ======================================================
+// PRODUCT MODULE
+// ======================================================
 import ProductsPage from "@/pages/dashboard/products/product/Products";
 import CreateProductPage from "@/pages/dashboard/products/product/CreateProduct";
 import EditProductPage from "@/pages/dashboard/products/product/EditProduct";
 
-// ================= OTHER MODULES =================
-import Orders from "@/pages/dashboard/orders/Orders";
+// ======================================================
+// ORDER MODULE
+// ======================================================
+import OrdersPage from "@/pages/dashboard/orders/Orders";
+import CreateOrderPage from "@/pages/dashboard/orders/CreateOrder";
+import EditOrderPage from "@/pages/dashboard/orders/EditOrder";
 
+// ======================================================
+// USER MODULE
+// ======================================================
 import UsersPage from "@/pages/dashboard/users/Users";
 import CreateUserPage from "@/pages/dashboard/users/CreateUser";
 import EditUserPage from "@/pages/dashboard/users/EditUser";
 
+// ======================================================
+// INVOICE MODULE
+// ======================================================
 import Invoices from "@/pages/dashboard/invoices/Invoice";
 
+// ======================================================
+// BRAND MODULE
+// ======================================================
 import BrandsPage from "@/pages/dashboard/products/brands/Brands";
 import CreateBrandPage from "@/pages/dashboard/products/brands/CreateBrand";
 import EditBrandPage from "@/pages/dashboard/products/brands/EditBrand";
 
+// ======================================================
+// CATEGORY MODULE
+// ======================================================
 import CategoriesPage from "@/pages/dashboard/products/category/Categories";
 import CreateCategoryPage from "@/pages/dashboard/products/category/CreateCategory";
 import EditCategoryPage from "@/pages/dashboard/products/category/EditCategory";
 
+// ======================================================
+// BANNER MODULE
+// ======================================================
 import BannersPage from "@/pages/dashboard/products/banner/Banners";
 import CreateBannerPage from "@/pages/dashboard/products/banner/CreateBanner";
 import EditBannerPage from "@/pages/dashboard/products/banner/EditBanner";
 
-// ================= PROTECTION =================
+// ======================================================
+// ROUTE PROTECTION
+// ======================================================
 import { ProtectedRoute, PublicRoute, AdminRoute } from "@/routes/Protection";
 
 // ======================================================
+// ROUTER CONFIGURATION
+// ======================================================
 export const router = createBrowserRouter([
-  // ================= PUBLIC =================
+  // ======================================================
+  // PUBLIC ROUTES
+  // Accessible without authentication
+  // ======================================================
   {
     element: <PublicRoute />,
+
     children: [
-      { path: "/login", element: <Login /> },
-      { path: "/register", element: <Register /> },
+      {
+        path: "/login",
+        element: <Login />,
+      },
+
+      {
+        path: "/register",
+        element: <Register />,
+      },
     ],
   },
 
-  // ================= PROTECTED =================
+  // ======================================================
+  // PROTECTED ROUTES
+  // Requires authenticated user
+  // ======================================================
   {
     element: <ProtectedRoute />,
+
     children: [
       {
         path: "/",
         element: <App />,
-        children: [
-          // ================= DASHBOARD =================
-          { index: true, element: <Dashboard /> },
-          { path: "dashboard", element: <Dashboard /> },
 
-          // ================= PRODUCTS =================
+        children: [
+          // ======================================================
+          // DASHBOARD
+          // ======================================================
+          {
+            index: true,
+            element: <Dashboard />,
+          },
+
+          {
+            path: "dashboard",
+            element: <Dashboard />,
+          },
+
+          // ======================================================
+          // PRODUCT ROUTES
+          // ======================================================
           {
             path: "dashboard/products",
+
             children: [
-              { index: true, element: <ProductsPage /> },
-              { path: "create", element: <CreateProductPage /> },
-              { path: "edit/:id", element: <EditProductPage /> },
+              // GET ALL PRODUCTS
+              {
+                index: true,
+                element: <ProductsPage />,
+              },
+
+              // CREATE PRODUCT
+              {
+                path: "create",
+                element: <CreateProductPage />,
+              },
+
+              // EDIT PRODUCT
+              {
+                path: "edit/:id",
+                element: <EditProductPage />,
+              },
             ],
           },
 
-          // ================= ORDERS =================
-          { path: "dashboard/orders", element: <Orders /> },
+          // ======================================================
+          // ORDER ROUTES
+          // ======================================================
+          {
+            path: "dashboard/orders",
 
-          // ================= BRANDS =================
+            children: [
+              // GET ALL ORDERS
+              {
+                index: true,
+                element: <OrdersPage />,
+              },
+
+              // CREATE ORDER
+              {
+                path: "create",
+                element: <CreateOrderPage />,
+              },
+
+              // EDIT ORDER
+              {
+                path: "edit/:id",
+                element: <EditOrderPage />,
+              },
+            ],
+          },
+
+          // ======================================================
+          // BRAND ROUTES
+          // ======================================================
           {
             path: "dashboard/brands",
+
             children: [
-              { index: true, element: <BrandsPage /> },
-              { path: "create", element: <CreateBrandPage /> },
-              { path: "edit/:id", element: <EditBrandPage /> },
+              // GET ALL BRANDS
+              {
+                index: true,
+                element: <BrandsPage />,
+              },
+
+              // CREATE BRAND
+              {
+                path: "create",
+                element: <CreateBrandPage />,
+              },
+
+              // EDIT BRAND
+              {
+                path: "edit/:id",
+                element: <EditBrandPage />,
+              },
             ],
           },
 
-          // ================= CATEGORIES =================
+          // ======================================================
+          // CATEGORY ROUTES
+          // ======================================================
           {
             path: "dashboard/categories",
+
             children: [
-              { index: true, element: <CategoriesPage /> },
-              { path: "create", element: <CreateCategoryPage /> },
-              { path: "edit/:id", element: <EditCategoryPage /> },
+              // GET ALL CATEGORIES
+              {
+                index: true,
+                element: <CategoriesPage />,
+              },
+
+              // CREATE CATEGORY
+              {
+                path: "create",
+                element: <CreateCategoryPage />,
+              },
+
+              // EDIT CATEGORY
+              {
+                path: "edit/:id",
+                element: <EditCategoryPage />,
+              },
             ],
           },
 
-          // ================= BANNERS =================
+          // ======================================================
+          // BANNER ROUTES
+          // ======================================================
           {
             path: "dashboard/banners",
+
             children: [
-              { index: true, element: <BannersPage /> },
-              { path: "create", element: <CreateBannerPage /> },
-              { path: "edit/:id", element: <EditBannerPage /> },
+              // GET ALL BANNERS
+              {
+                index: true,
+                element: <BannersPage />,
+              },
+
+              // CREATE BANNER
+              {
+                path: "create",
+                element: <CreateBannerPage />,
+              },
+
+              // EDIT BANNER
+              {
+                path: "edit/:id",
+                element: <EditBannerPage />,
+              },
             ],
           },
 
-          // ================= ADMIN =================
+          // ======================================================
+          // ADMIN ONLY ROUTES
+          // Accessible only by admin users
+          // ======================================================
           {
             element: <AdminRoute />,
+
             children: [
+              // ======================================================
+              // USER MANAGEMENT
+              // ======================================================
               {
                 path: "dashboard/users",
+
                 children: [
-                  { index: true, element: <UsersPage /> },
-                  { path: "create", element: <CreateUserPage /> },
-                  { path: "edit/:userId", element: <EditUserPage /> },
+                  // GET ALL USERS
+                  {
+                    index: true,
+                    element: <UsersPage />,
+                  },
+
+                  // CREATE USER
+                  {
+                    path: "create",
+                    element: <CreateUserPage />,
+                  },
+
+                  // EDIT USER
+                  {
+                    path: "edit/:userId",
+                    element: <EditUserPage />,
+                  },
                 ],
               },
 
-              { path: "dashboard/invoices", element: <Invoices /> },
+              // ======================================================
+              // INVOICE MANAGEMENT
+              // ======================================================
+              {
+                path: "dashboard/invoices",
+                element: <Invoices />,
+              },
             ],
           },
         ],

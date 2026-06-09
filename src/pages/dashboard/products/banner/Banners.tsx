@@ -41,6 +41,7 @@ import { FiPlus, FiRefreshCw } from "react-icons/fi";
 
 import { defaultAvatar } from "@/assets";
 import { ViewBanner } from "@/pages/dashboard/products/banner/ViewBanner";
+import { BannerSkeleton } from "@/components/skeletons/BannerSkeleton";
 
 const Banner = () => {
   const navigate = useNavigate();
@@ -82,7 +83,7 @@ const Banner = () => {
         limit: 10,
         search,
       });
-    }, 500);
+    }, 2000);
 
     return () => clearTimeout(timer);
   }, [search, refetch]);
@@ -151,6 +152,10 @@ const Banner = () => {
 
     setSelectedBanners([]);
   };
+
+  if (loading) {
+    return <BannerSkeleton />;
+  }
 
   return (
     <div className="space-y-6">
@@ -361,14 +366,13 @@ const Banner = () => {
                         <div className="flex items-center gap-2 text-sm font-medium text-slate-700">
                           <Calendar size={14} className="text-slate-400" />
 
-                          {new Date(banner.startFrom).toLocaleDateString(
-                            "en-IN",
-                            {
-                              day: "2-digit",
-                              month: "short",
-                              year: "numeric",
-                            },
-                          )}
+                          {new Date(
+                            (banner as any).startFrom,
+                          ).toLocaleDateString("en-IN", {
+                            day: "2-digit",
+                            month: "short",
+                            year: "numeric",
+                          })}
                         </div>
                       </TableCell>
 

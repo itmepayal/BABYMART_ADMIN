@@ -20,14 +20,11 @@ export const Pagination = ({
 }: PaginationProps) => {
   const getPageNumbers = () => {
     const items: (number | string)[] = [];
-
     if (pages <= 7) {
       for (let i = 1; i <= pages; i++) items.push(i);
     } else {
       items.push(1);
-
       if (page > 3) items.push("...");
-
       for (
         let i = Math.max(2, page - 1);
         i <= Math.min(pages - 1, page + 1);
@@ -35,12 +32,9 @@ export const Pagination = ({
       ) {
         items.push(i);
       }
-
       if (page < pages - 2) items.push("...");
-
       items.push(pages);
     }
-
     return items;
   };
 
@@ -68,6 +62,7 @@ export const Pagination = ({
           <button
             disabled={page === 1}
             onClick={() => onChange(1)}
+            aria-label="First page"
             className="flex h-10 w-10 items-center justify-center rounded-xl border border-slate-200 bg-white text-slate-700 transition hover:bg-slate-50 disabled:cursor-not-allowed disabled:opacity-40"
           >
             <ChevronsLeft className="h-4 w-4" />
@@ -76,6 +71,7 @@ export const Pagination = ({
           <button
             disabled={page === 1}
             onClick={() => onChange(page - 1)}
+            aria-label="Previous page"
             className="inline-flex h-10 items-center gap-2 rounded-xl border border-slate-200 bg-white px-4 text-sm font-medium text-slate-700 transition hover:bg-slate-50 disabled:cursor-not-allowed disabled:opacity-40"
           >
             <ChevronLeft className="h-4 w-4" />
@@ -85,7 +81,7 @@ export const Pagination = ({
           {pageNumbers.map((item, index) =>
             item === "..." ? (
               <span
-                key={index}
+                key={`ellipsis-${index}`}
                 className="flex h-10 w-10 items-center justify-center text-slate-400"
               >
                 ...
@@ -94,6 +90,8 @@ export const Pagination = ({
               <button
                 key={item}
                 onClick={() => onChange(Number(item))}
+                aria-label={`Page ${item}`}
+                aria-current={page === item ? "page" : undefined}
                 className={`flex h-10 w-10 items-center justify-center rounded-xl text-sm font-medium transition-all ${
                   page === item
                     ? "bg-emerald-600 text-white shadow-lg shadow-emerald-100"
@@ -108,6 +106,7 @@ export const Pagination = ({
           <button
             disabled={page === pages}
             onClick={() => onChange(page + 1)}
+            aria-label="Next page"
             className="inline-flex h-10 items-center gap-2 rounded-xl border border-slate-200 bg-white px-4 text-sm font-medium text-slate-700 transition hover:bg-slate-50 disabled:cursor-not-allowed disabled:opacity-40"
           >
             Next
@@ -117,6 +116,7 @@ export const Pagination = ({
           <button
             disabled={page === pages}
             onClick={() => onChange(pages)}
+            aria-label="Last page"
             className="flex h-10 w-10 items-center justify-center rounded-xl border border-slate-200 bg-white text-slate-700 transition hover:bg-slate-50 disabled:cursor-not-allowed disabled:opacity-40"
           >
             <ChevronsRight className="h-4 w-4" />

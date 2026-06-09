@@ -1,27 +1,33 @@
 import { useEffect, useState } from "react";
-import { useParams, useNavigate } from "react-router-dom";
+import { useNavigate, useParams } from "react-router-dom";
 import { motion } from "framer-motion";
-import { useForm, Controller, useFieldArray } from "react-hook-form";
+import { Controller, useFieldArray, useForm } from "react-hook-form";
 
 import { Header } from "@/components/dashbaord/Header";
 import { FormField } from "@/components/form/FormInput";
 
-import { FiUsers, FiRefreshCw } from "react-icons/fi";
+import { FiRefreshCw, FiUsers } from "react-icons/fi";
+
 import {
   ArrowLeft,
-  Upload,
-  Trash2,
-  User,
-  Shield,
+  Camera,
+  CheckCircle2,
+  Home,
   Lock,
-  Plus,
   MapPin,
+  Plus,
   Save,
+  Shield,
+  Sparkles,
+  Trash2,
+  Upload,
+  User,
 } from "lucide-react";
 
 import { defaultAvatar } from "@/assets";
 import { useUsers } from "@/hooks/users/useUsers";
 import { toast } from "sonner";
+import { SaveButton } from "@/components/common/Action";
 
 type Address = {
   street: string;
@@ -50,7 +56,7 @@ const defaultAddress = {
 };
 
 const cardStyle =
-  "rounded-3xl border border-slate-200 bg-white p-7 shadow-sm hover:shadow-md transition-all";
+  "rounded-[28px] border border-slate-200/70 bg-white p-7 shadow-sm transition-all duration-300 hover:shadow-xl";
 
 const EditUser = () => {
   const { userId } = useParams();
@@ -60,7 +66,7 @@ const EditUser = () => {
     useUsers();
 
   const [avatarPreview, setAvatarPreview] = useState("");
-  const [loading, setLoading] = useState(false);
+  const [saving, setSaving] = useState(false);
 
   const {
     register,
@@ -85,7 +91,9 @@ const EditUser = () => {
   });
 
   useEffect(() => {
-    if (userId) getUserById(userId);
+    if (userId) {
+      getUserById(userId);
+    }
   }, [userId]);
 
   useEffect(() => {
@@ -105,49 +113,65 @@ const EditUser = () => {
     setAvatarPreview(selectedUser.avatar?.url || "");
   }, [selectedUser, reset]);
 
-  const onSubmit = async (data: FormValues) => {
-    if (!userId) return;
-
-    setLoading(true);
-    const id = toast.loading("Updating user...");
-
-    try {
-      await updateUser(userId, data);
-      toast.success("User updated successfully", { id });
-      navigate("/dashboard/users");
-    } catch (err: any) {
-      toast.error(err?.response?.data?.message || "Update failed", {
-        id,
-      });
-    } finally {
-      setLoading(false);
-    }
-  };
-
   const handleAvatarChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
+
     if (!file || !userId) return;
 
     setAvatarPreview(URL.createObjectURL(file));
 
     const formData = new FormData();
+
     formData.append("avatar", file);
 
     const id = toast.loading("Uploading avatar...");
 
     try {
       await changeAvatarUser(formData, userId);
-      toast.success("Avatar updated", { id });
-    } catch {
-      toast.error("Upload failed", { id });
+
+      toast.success("Avatar updated successfully", {
+        id,
+      });
+    } catch (err: any) {
+      toast.error(err?.response?.data?.message || "Avatar upload failed", {
+        id,
+      });
+    }
+  };
+
+  const handleUpdate = async (data: FormValues) => {
+    if (!userId) return;
+
+    setSaving(true);
+
+    const toastId = toast.loading("Updating user...");
+
+    try {
+      await updateUser(userId, {
+        ...data,
+        addresses: data.addresses.slice(0, 5),
+      });
+
+      toast.success("User updated successfully", {
+        id: toastId,
+      });
+
+      navigate("/dashboard/users");
+    } catch (err: any) {
+      toast.error(err?.response?.data?.message || "Failed to update user", {
+        id: toastId,
+      });
+    } finally {
+      setSaving(false);
     }
   };
 
   return (
-    <div className="min-h-screen text-sm">
+    <div className="space-y-6 pb-10">
+      {/* ================= HEADER ================= */}
       <Header
         title="Edit User"
-        description="Manage user information and account settings"
+        description="Update and manage professional user accounts"
         icon={FiUsers}
         actionLabel="Back"
         actionIcon={ArrowLeft}
@@ -156,176 +180,183 @@ const EditUser = () => {
         isRefreshiingShow={false}
       />
 
-      <form onSubmit={handleSubmit(onSubmit)}>
-        <div className="mt-6 grid grid-cols-1 gap-6 xl:grid-cols-12">
-          {/* LEFT */}
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            className="space-y-6 xl:col-span-8"
-          >
-            {/* PERSONAL */}
+      {/* ================= BODY ================= */}
+      <div className="grid gap-6 xl:grid-cols-12">
+        {/* ================= LEFT ================= */}
+        <motion.div
+          initial={{ opacity: 0, y: 15 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="space-y-6 xl:col-span-8"
+        >
+          <form onSubmit={handleSubmit(handleUpdate)} className="space-y-6">
+            {/* ================= PERSONAL INFO ================= */}
             <div className={cardStyle}>
-              {/* HEADER */}
-              <div className="mb-6">
-                <h2 className="text-lg font-semibold text-slate-900">
-                  Personal Information
-                </h2>
-                <p className="mt-1 text-sm text-slate-500">
-                  Manage the user's identity details used across the platform.
-                </p>
+              <div className="mb-7 flex items-start gap-4">
+                <div className="rounded-2xl bg-emerald-50 p-3">
+                  <User className="text-emerald-600" size={22} />
+                </div>
+
+                <div>
+                  <h2 className="text-xl font-semibold text-slate-900">
+                    Personal Information
+                  </h2>
+
+                  <p className="mt-1 text-sm text-slate-500">
+                    Update user profile details and identity information.
+                  </p>
+                </div>
               </div>
 
-              {/* FORM */}
               <div className="grid gap-5 md:grid-cols-2">
-                {/* FIRST NAME */}
-                <div>
-                  <FormField
-                    label="First Name"
-                    icon={User}
-                    {...register("firstname", { required: "Required" })}
-                    error={errors.firstname?.message}
-                  />
-                  <p className="mt-2 text-xs text-slate-500">
-                    Enter the user's first name as it should appear across the
-                    platform.
-                  </p>
-                </div>
+                <FormField
+                  label="First Name"
+                  icon={User}
+                  placeholder="Enter first name"
+                  {...register("firstname", {
+                    required: "First name is required",
+                  })}
+                  error={errors.firstname?.message}
+                />
 
-                {/* LAST NAME */}
-                <div>
-                  <FormField
-                    label="Last Name"
-                    icon={User}
-                    {...register("lastname", { required: "Required" })}
-                    error={errors.lastname?.message}
-                  />
-                  <p className="mt-2 text-xs text-slate-500">
-                    Enter the user's last name for proper identification and
-                    records.
-                  </p>
-                </div>
+                <FormField
+                  label="Last Name"
+                  icon={User}
+                  placeholder="Enter last name"
+                  {...register("lastname", {
+                    required: "Last name is required",
+                  })}
+                  error={errors.lastname?.message}
+                />
               </div>
             </div>
 
-            {/* ROLE */}
+            {/* ================= SECURITY ================= */}
             <div className={cardStyle}>
-              <h2 className="mb-2 text-lg font-semibold">Role Management</h2>
+              <div className="mb-7 flex items-start gap-4">
+                <div className="rounded-2xl bg-blue-50 p-3">
+                  <Shield className="text-blue-600" size={22} />
+                </div>
 
-              <p className="mb-4 text-sm text-slate-500">
-                Select the user role to define system permissions and access
-                level.
-              </p>
+                <div>
+                  <h2 className="text-xl font-semibold text-slate-900">
+                    Security & Permissions
+                  </h2>
 
-              <select
-                {...register("role")}
-                className="h-12 w-full rounded-xl border border-slate-200 px-4 text-sm outline-none transition focus:border-emerald-500 focus:ring-4 focus:ring-emerald-100"
-              >
-                <option value="user">User</option>
-                <option value="admin">Admin</option>
-                <option value="deliveryMan">Delivery Man</option>
-              </select>
-
-              <p className="mt-2 text-xs text-slate-500">
-                Admin role has full system access. Assign carefully.
-              </p>
-            </div>
-
-            {/* STATUS */}
-            <div className={cardStyle}>
-              {/* HEADER */}
-              <div className="mb-6">
-                <h2 className="text-lg font-semibold text-slate-900">
-                  Account Status
-                </h2>
-                <p className="mt-1 text-sm text-slate-500">
-                  Control whether this user can access the platform.
-                </p>
+                  <p className="mt-1 text-sm text-slate-500">
+                    Manage user access permissions and account status.
+                  </p>
+                </div>
               </div>
 
-              {/* TOGGLE */}
-              <Controller
-                name="isBlocked"
-                control={control}
-                render={({ field }) => (
-                  <div>
-                    <button
-                      type="button"
-                      onClick={() => field.onChange(!field.value)}
-                      className={`flex h-14 w-full items-center justify-between rounded-2xl border px-5 text-sm font-medium transition ${
-                        field.value
-                          ? "border-red-200 bg-red-50 text-red-600"
-                          : "border-emerald-200 bg-emerald-50 text-emerald-700"
-                      }`}
-                    >
-                      <span>{field.value ? "Blocked" : "Active"}</span>
+              <div className="grid gap-5 md:grid-cols-2">
+                {/* ROLE */}
+                <div>
+                  <label className="mb-2 block text-xs font-medium text-slate-600">
+                    User Role
+                  </label>
 
-                      {/* SWITCH UI */}
-                      <div
-                        className={`h-6 w-11 rounded-full p-1 ${
-                          field.value ? "bg-red-500" : "bg-emerald-500"
+                  <select
+                    {...register("role")}
+                    className="h-12 w-full rounded-2xl border border-slate-200 bg-white px-4 text-sm font-medium text-slate-700 outline-none transition-all focus:border-emerald-500 focus:ring-4 focus:ring-emerald-100"
+                  >
+                    <option value="user">User</option>
+                    <option value="admin">Admin</option>
+                    <option value="deliveryMan">Delivery Man</option>
+                  </select>
+                </div>
+
+                {/* STATUS */}
+                <Controller
+                  name="isBlocked"
+                  control={control}
+                  render={({ field }) => (
+                    <div>
+                      <label className="mb-2 block text-xs font-medium text-slate-600">
+                        Account Status
+                      </label>
+
+                      <button
+                        type="button"
+                        onClick={() => field.onChange(!field.value)}
+                        className={`flex h-12 w-full items-center justify-between rounded-2xl border px-4 text-sm font-medium transition-all ${
+                          field.value
+                            ? "border-red-200 bg-red-50 text-red-600"
+                            : "border-emerald-200 bg-emerald-50 text-emerald-700"
                         }`}
                       >
-                        <div
-                          className={`h-4 w-4 rounded-full bg-white transition ${
-                            field.value ? "ml-auto" : ""
-                          }`}
-                        />
-                      </div>
-                    </button>
+                        <span>
+                          {field.value ? "Blocked Account" : "Active Account"}
+                        </span>
 
-                    {/* MESSAGE */}
-                    <p className="mt-2 text-xs text-slate-500">
-                      {field.value
-                        ? "Blocked users cannot log in or perform any actions."
-                        : "Active users can access and use the platform normally."}
-                    </p>
-                  </div>
-                )}
-              />
+                        <div
+                          className={`h-6 w-11 rounded-full p-1 transition ${
+                            field.value ? "bg-red-500" : "bg-emerald-500"
+                          }`}
+                        >
+                          <div
+                            className={`h-4 w-4 rounded-full bg-white transition ${
+                              field.value ? "ml-auto" : ""
+                            }`}
+                          />
+                        </div>
+                      </button>
+                    </div>
+                  )}
+                />
+              </div>
             </div>
 
-            {/* ADDRESS */}
+            {/* ================= ADDRESSES ================= */}
             <div className={cardStyle}>
-              {/* HEADER */}
-              <div className="mb-6 flex items-start justify-between">
+              <div className="mb-7 flex items-center justify-between">
                 <div>
-                  <h2 className="text-lg font-semibold text-slate-900">
-                    Addresses
+                  <h2 className="text-xl font-semibold text-slate-900">
+                    User Addresses
                   </h2>
+
                   <p className="mt-1 text-sm text-slate-500">
-                    Manage user delivery locations and contact details.
+                    Manage delivery and billing addresses.
                   </p>
                 </div>
 
                 <button
                   type="button"
                   onClick={() => append(defaultAddress)}
-                  className="flex items-center gap-2 rounded-xl border border-emerald-500 px-4 py-2 font-medium text-emerald-600 transition hover:bg-emerald-500 hover:text-white"
+                  className="inline-flex h-11 w-11 items-center justify-center rounded-2xl bg-gradient-to-r from-emerald-600 to-teal-600 text-white shadow-lg transition-all duration-300 hover:scale-105 hover:shadow-xl active:scale-95"
                 >
-                  <Plus size={16} />
-                  Add Address
+                  <Plus size={18} />
                 </button>
               </div>
 
-              {/* ADDRESS LIST */}
               <div className="space-y-5">
                 {fields.map((field, index) => (
                   <div
                     key={field.id}
-                    className="rounded-2xl border border-slate-200 bg-slate-50 p-5"
+                    className="rounded-3xl border border-slate-200 bg-slate-50/70 p-5"
                   >
-                    {/* TOP BAR */}
-                    <div className="mb-4 flex items-center justify-between">
-                      <span className="text-sm font-medium text-slate-700">
-                        Address {index + 1}
-                      </span>
+                    {/* TOP */}
+                    <div className="mb-5 flex items-center justify-between">
+                      <div className="flex items-center gap-3">
+                        <div className="rounded-xl bg-white p-2 shadow-sm">
+                          <Home size={18} className="text-emerald-600" />
+                        </div>
+
+                        <div>
+                          <h4 className="font-semibold text-slate-800">
+                            Address {index + 1}
+                          </h4>
+
+                          <p className="text-xs text-slate-500">
+                            User location information
+                          </p>
+                        </div>
+                      </div>
 
                       {fields.length > 1 && (
                         <button
                           type="button"
                           onClick={() => remove(index)}
-                          className="rounded-lg p-2 text-red-500 hover:bg-red-100"
+                          className="flex h-10 w-10 items-center justify-center rounded-xl border border-red-200 bg-red-50 text-red-500 transition hover:bg-red-100"
                         >
                           <Trash2 size={16} />
                         </button>
@@ -333,139 +364,220 @@ const EditUser = () => {
                     </div>
 
                     {/* FORM */}
-                    <div className="grid gap-4 md:grid-cols-2">
-                      {/* STREET */}
-                      <div className="md:col-span-2">
-                        <FormField
-                          label="Street"
-                          {...register(`addresses.${index}.street`)}
-                        />
-                        <p className="mt-1 text-xs text-slate-500">
-                          Enter house number, building, and street name.
-                        </p>
-                      </div>
+                    <div className="space-y-4">
+                      <FormField
+                        label="Street Address"
+                        placeholder="Enter street address"
+                        {...register(`addresses.${index}.street`)}
+                      />
 
-                      {/* CITY */}
-                      <div>
+                      <div className="grid gap-4 md:grid-cols-2">
                         <FormField
                           label="City"
+                          placeholder="Enter city"
                           {...register(`addresses.${index}.city`)}
                         />
-                        <p className="mt-1 text-xs text-slate-500">
-                          City where the address is located.
-                        </p>
-                      </div>
 
-                      {/* STATE */}
-                      <div>
                         <FormField
                           label="State"
+                          placeholder="Enter state"
                           {...register(`addresses.${index}.state`)}
                         />
-                        <p className="mt-1 text-xs text-slate-500">
-                          State or region for this address.
-                        </p>
                       </div>
 
-                      {/* COUNTRY */}
-                      <div>
+                      <div className="grid gap-4 md:grid-cols-2">
                         <FormField
                           label="Country"
+                          placeholder="Enter country"
                           {...register(`addresses.${index}.country`)}
                         />
-                        <p className="mt-1 text-xs text-slate-500">
-                          Country of the delivery location.
-                        </p>
-                      </div>
 
-                      {/* PINCODE */}
-                      <div>
                         <FormField
                           label="Pincode"
+                          placeholder="Enter postal code"
                           {...register(`addresses.${index}.pincode`)}
                         />
-                        <p className="mt-1 text-xs text-slate-500">
-                          Postal code used for delivery and verification.
-                        </p>
                       </div>
                     </div>
                   </div>
                 ))}
               </div>
-
-              {/* FOOT NOTE */}
-              <p className="mt-4 text-xs text-slate-500">
-                Ensure address details are accurate to avoid delivery or service
-                issues.
-              </p>
             </div>
-          </motion.div>
 
-          {/* RIGHT */}
-          <motion.div
-            initial={{ opacity: 0, x: 15 }}
-            animate={{ opacity: 1, x: 0 }}
-            className="xl:col-span-4 capitalize"
-          >
-            <div className="sticky top-6 rounded-3xl border border-slate-200 bg-white p-6 shadow-sm">
-              <div className="rounded-3xl bg-gradient-to-r from-emerald-500 to-cyan-500 p-8 text-center text-white">
-                <label className="group relative mx-auto block w-fit cursor-pointer">
-                  <img
-                    src={avatarPreview || defaultAvatar}
-                    alt="avatar"
-                    className="h-28 w-28 rounded-full border-4 border-white object-cover"
-                  />
+            {/* ================= FOOTER ================= */}
+            <div className="flex items-center justify-end rounded-3xl border border-slate-200 bg-white p-6 shadow-sm">
+              <div className="w-auto">
+                <SaveButton
+                  loading={saving}
+                  icon={<Save size={18} />}
+                  label="Save Changes"
+                />
+              </div>
+            </div>
+          </form>
+        </motion.div>
 
-                  <div className="absolute inset-0 flex items-center justify-center rounded-full bg-black/40 opacity-0 transition group-hover:opacity-100">
-                    <Upload size={18} />
+        {/* ================= RIGHT ================= */}
+        <motion.div
+          initial={{ opacity: 0, x: 15 }}
+          animate={{ opacity: 1, x: 0 }}
+          className="xl:col-span-4"
+        >
+          <div className="sticky top-24 space-y-6">
+            {/* ================= PROFILE CARD ================= */}
+            <div className="overflow-hidden rounded-[32px] border border-slate-200 bg-white shadow-xl shadow-slate-100">
+              {/* COVER */}
+              <div className="relative h-36 bg-gradient-to-r from-emerald-500 via-teal-500 to-cyan-500">
+                <div className="absolute right-5 top-5 rounded-full bg-white/20 px-3 py-1 text-xs font-medium text-white backdrop-blur">
+                  Editing Profile
+                </div>
+              </div>
+
+              {/* CONTENT */}
+              <div className="-mt-16 px-6 pb-8">
+                <div className="flex flex-col items-center">
+                  {/* AVATAR */}
+                  <div className="group relative">
+                    <img
+                      src={avatarPreview || defaultAvatar}
+                      alt="avatar"
+                      className="h-32 w-32 rounded-full border-4 border-white object-cover shadow-2xl"
+                    />
+
+                    <label className="absolute inset-0 flex cursor-pointer items-center justify-center rounded-full bg-black/50 opacity-0 transition-all duration-300 group-hover:opacity-100">
+                      <div className="flex flex-col items-center gap-1">
+                        <Camera size={20} className="text-white" />
+
+                        <span className="text-xs text-white">Change</span>
+                      </div>
+
+                      <input
+                        hidden
+                        type="file"
+                        accept="image/*"
+                        onChange={handleAvatarChange}
+                      />
+                    </label>
                   </div>
 
-                  <input
-                    hidden
-                    type="file"
-                    accept="image/*"
-                    onChange={handleAvatarChange}
-                  />
-                </label>
+                  {/* USER INFO */}
+                  <h3 className="mt-5 text-2xl font-bold text-slate-900">
+                    {watch("firstname") || "User"} {watch("lastname") || ""}
+                  </h3>
 
-                <h3 className="mt-4 text-xl font-bold">
-                  {watch("firstname")} {watch("lastname")}
-                </h3>
-                <p className="mt-1 text-sm text-white/80">
-                  {selectedUser?.email}
-                </p>
-              </div>
+                  <p className="mt-1 text-sm text-slate-500">
+                    {selectedUser?.email}
+                  </p>
 
-              <div className="mt-6 space-y-3">
-                <div className="rounded-xl bg-slate-50 px-4 py-3">
-                  <Shield size={16} className="mr-2 inline" />
-                  {watch("role")}
-                </div>
+                  <div
+                    className={`mt-4 flex items-center gap-2 rounded-full px-4 py-2 text-sm font-medium ${
+                      watch("isBlocked")
+                        ? "bg-red-50 text-red-700"
+                        : "bg-emerald-50 text-emerald-700"
+                    }`}
+                  >
+                    <CheckCircle2 size={16} />
 
-                <div className="rounded-xl bg-slate-50 px-4 py-3">
-                  <Lock size={16} className="mr-2 inline" />
-                  {watch("isBlocked") ? "Blocked" : "Active"}
-                </div>
-
-                <div className="rounded-xl bg-slate-50 px-4 py-3">
-                  <MapPin size={16} className="mr-2 inline" />
-                  {fields.length} Addresses
+                    {watch("isBlocked") ? "Blocked Account" : "Active Account"}
+                  </div>
                 </div>
               </div>
-
-              {/* SINGLE SAVE BUTTON */}
-              <button
-                type="submit"
-                disabled={loading}
-                className="mt-6 flex w-full items-center justify-center gap-2 rounded-2xl bg-gradient-to-r from-emerald-600 to-teal-600 px-5 py-3 font-semibold text-white shadow-lg transition hover:shadow-xl disabled:opacity-50"
-              >
-                <Save size={18} />
-                {loading ? "Saving..." : "Save All Changes"}
-              </button>
             </div>
-          </motion.div>
-        </div>
-      </form>
+
+            {/* ================= SUMMARY ================= */}
+            <div className={cardStyle}>
+              <div className="mb-5 flex items-center gap-3">
+                <div className="rounded-2xl bg-purple-50 p-3">
+                  <Sparkles size={20} className="text-purple-600" />
+                </div>
+
+                <div>
+                  <h3 className="font-semibold text-slate-900">
+                    Account Summary
+                  </h3>
+
+                  <p className="text-xs text-slate-500">
+                    Real-time user overview
+                  </p>
+                </div>
+              </div>
+
+              <div className="space-y-4">
+                {/* ROLE */}
+                <div className="flex items-center justify-between rounded-2xl border border-slate-100 bg-slate-50 px-4 py-4">
+                  <div className="flex items-center gap-3">
+                    <Shield size={18} className="text-emerald-600" />
+
+                    <span className="text-sm font-medium text-slate-700">
+                      Role
+                    </span>
+                  </div>
+
+                  <span className="rounded-full bg-emerald-100 px-3 py-1 text-xs font-semibold capitalize text-emerald-700">
+                    {watch("role")}
+                  </span>
+                </div>
+
+                {/* STATUS */}
+                <div className="flex items-center justify-between rounded-2xl border border-slate-100 bg-slate-50 px-4 py-4">
+                  <div className="flex items-center gap-3">
+                    <Lock
+                      size={18}
+                      className={
+                        watch("isBlocked") ? "text-red-600" : "text-emerald-600"
+                      }
+                    />
+
+                    <span className="text-sm font-medium text-slate-700">
+                      Status
+                    </span>
+                  </div>
+
+                  <span
+                    className={`rounded-full px-3 py-1 text-xs font-semibold ${
+                      watch("isBlocked")
+                        ? "bg-red-100 text-red-700"
+                        : "bg-emerald-100 text-emerald-700"
+                    }`}
+                  >
+                    {watch("isBlocked") ? "Blocked" : "Active"}
+                  </span>
+                </div>
+
+                {/* ADDRESS */}
+                <div className="flex items-center justify-between rounded-2xl border border-slate-100 bg-slate-50 px-4 py-4">
+                  <div className="flex items-center gap-3">
+                    <MapPin size={18} className="text-blue-600" />
+
+                    <span className="text-sm font-medium text-slate-700">
+                      Addresses
+                    </span>
+                  </div>
+
+                  <span className="text-sm font-bold text-slate-900">
+                    {fields.length}
+                  </span>
+                </div>
+
+                {/* AVATAR */}
+                <div className="flex items-center justify-between rounded-2xl border border-slate-100 bg-slate-50 px-4 py-4">
+                  <div className="flex items-center gap-3">
+                    <Upload size={18} className="text-emerald-600" />
+
+                    <span className="text-sm font-medium text-slate-700">
+                      Avatar
+                    </span>
+                  </div>
+
+                  <span className="rounded-full bg-emerald-100 px-3 py-1 text-xs font-semibold text-emerald-700">
+                    Uploaded
+                  </span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </motion.div>
+      </div>
     </div>
   );
 };

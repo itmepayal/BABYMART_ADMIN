@@ -39,6 +39,7 @@ import { FiPlus, FiRefreshCw } from "react-icons/fi";
 import { defaultAvatar } from "@/assets";
 import { ConfirmModal } from "@/components/dashbaord/ConfirmModal";
 import { ViewProduct } from "./ViewProduct";
+import { ProductSkeleton } from "@/components/skeletons/ProductSkeleton";
 
 const Products = () => {
   const navigate = useNavigate();
@@ -122,6 +123,11 @@ const Products = () => {
     return "out-of-stock";
   };
 
+  // ================= SKELETON =================
+  if (loading) {
+    return <ProductSkeleton />;
+  }
+
   return (
     <div className="space-y-6">
       {/* ================= PAGE HEADER ================= */}
@@ -136,7 +142,6 @@ const Products = () => {
         onRefresh={refetch}
         isRefreshing={loading}
       />
-
       {/* ================= SEARCH BAR ================= */}
       <div className="rounded-2xl border border-slate-200 bg-white px-4 py-4 shadow-sm">
         <div className="relative w-full max-w-md">
@@ -181,7 +186,6 @@ const Products = () => {
                   </p>
                 </div>
               </div>
-
               <div className="flex flex-wrap items-center gap-3">
                 <button
                   onClick={handleRestoreClick}
@@ -190,7 +194,6 @@ const Products = () => {
                   <RotateCcw size={16} />
                   Restore
                 </button>
-
                 <button
                   onClick={() => setBulkDeleteOpen(true)}
                   className="inline-flex items-center gap-2 rounded-xl bg-amber-500 px-4 py-2.5 text-sm font-medium text-white shadow-sm transition hover:bg-amber-600"
@@ -198,7 +201,6 @@ const Products = () => {
                   <Trash2 size={16} />
                   Delete
                 </button>
-
                 <button
                   onClick={() => setPermanentDeleteOpen(true)}
                   className="inline-flex items-center gap-2 rounded-xl bg-red-600 px-4 py-2.5 text-sm font-medium text-white shadow-sm transition hover:bg-red-700"
@@ -206,7 +208,6 @@ const Products = () => {
                   <Trash size={16} />
                   Permanent Delete
                 </button>
-
                 <button
                   onClick={() => setSelectedProducts([])}
                   className="inline-flex items-center gap-2 rounded-xl border border-slate-200 bg-white px-4 py-2.5 text-sm font-medium text-slate-700 transition hover:bg-slate-50"

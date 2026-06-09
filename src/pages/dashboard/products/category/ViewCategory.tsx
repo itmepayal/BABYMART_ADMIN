@@ -5,6 +5,7 @@ import {
   XCircle,
   Calendar,
   FolderTree,
+  Tag,
 } from "lucide-react";
 
 import { defaultAvatar } from "@/assets";
@@ -40,100 +41,118 @@ export const ViewCategory = ({ category, onClose }: Props) => {
   return (
     <div
       onClick={onClose}
-      className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4 backdrop-blur-md"
+      className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4 backdrop-blur-sm"
     >
       <div
         onClick={(e) => e.stopPropagation()}
-        className="animate-in fade-in zoom-in-95 relative w-full max-w-lg overflow-hidden rounded-3xl bg-white shadow-2xl duration-300"
+        className="animate-in fade-in zoom-in-95 relative w-full max-w-md overflow-hidden rounded-3xl bg-white shadow-2xl duration-200"
       >
-        {/* HEADER */}
-        <div className="relative h-32 bg-gradient-to-r from-emerald-500 via-teal-500 to-cyan-500">
+        <div className="relative h-36 bg-gradient-to-br from-emerald-500 via-teal-500 to-cyan-500">
+          <div className="absolute -bottom-8 -right-8 h-32 w-32 rounded-full bg-white/10" />
+          <div className="absolute -bottom-14 -right-14 h-48 w-48 rounded-full bg-white/5" />
+          <div className="absolute -top-6 -left-6 h-24 w-24 rounded-full bg-white/10" />
+
+          <div className="absolute bottom-14 left-6">
+            <p className="text-xs -mt-18 font-semibold uppercase tracking-widest text-white/70">
+              Category Details
+            </p>
+          </div>
+
           <button
             onClick={onClose}
-            className="absolute right-4 top-4 rounded-full bg-white/20 p-2 text-white hover:bg-white/30"
+            aria-label="Close"
+            className="absolute right-4 top-4 flex h-8 w-8 items-center justify-center rounded-full bg-white/20 text-white transition hover:bg-white/30 hover:scale-105"
           >
-            <X size={18} />
+            <X size={16} />
           </button>
         </div>
 
-        {/* PROFILE */}
-        <div className="relative px-6 pb-6 text-center">
-          <img
-            src={imageUrl}
-            alt={category.name}
-            className="mx-auto -mt-14 h-28 w-28 rounded-full border-4 border-white object-cover shadow-xl"
-          />
+        <div className="relative px-6">
+          <div className="relative -mt-26 flex items-end gap-4">
+            <div className="relative shrink-0">
+              <img
+                src={imageUrl}
+                alt={category.name}
+                className="h-24 w-24 rounded-2xl border-4 border-white object-cover shadow-xl"
+              />
+              <span
+                className={`absolute -bottom-1 -right-1 h-4 w-4 rounded-full border-2 border-white ${
+                  category.isActive ? "bg-emerald-500" : "bg-red-400"
+                }`}
+              />
+            </div>
 
-          <h2 className="mt-4 text-2xl font-bold text-gray-900">
-            {category.name}
-          </h2>
-
-          {/* STATUS */}
-          <div className="mt-4">
-            <span
-              className={`inline-flex items-center gap-2 rounded-full px-4 py-2 text-xs font-semibold uppercase tracking-wide ${
-                category.isActive
-                  ? "bg-emerald-50 text-emerald-700"
-                  : "bg-red-50 text-red-600"
-              }`}
-            >
-              {category.isActive ? (
-                <CheckCircle size={14} />
-              ) : (
-                <XCircle size={14} />
-              )}
-
-              {category.isActive ? "Active" : "Inactive"}
-            </span>
+            <div className="pb-2 min-w-0">
+              <h2 className="text-xl font-bold text-white leading-tight truncate">
+                {category.name}
+              </h2>
+              <span
+                className={`mt-1.5 inline-flex items-center gap-1.5 rounded-full px-3 py-1 text-[11px] font-semibold uppercase tracking-wide ${
+                  category.isActive
+                    ? "bg-emerald-50 text-emerald-700"
+                    : "bg-red-50 text-red-600"
+                }`}
+              >
+                {category.isActive ? (
+                  <CheckCircle size={12} />
+                ) : (
+                  <XCircle size={12} />
+                )}
+                {category.isActive ? "Active" : "Inactive"}
+              </span>
+            </div>
           </div>
         </div>
 
-        {/* DETAILS */}
-        <div className="space-y-3 px-6 pb-6">
+        <div className="mt-5 space-y-2.5 px-6">
           <InfoCard
-            label="Category Type"
-            value={
-              <span className="flex items-center gap-2 text-gray-700">
-                <FolderTree size={15} />
-                {category.categoryType}
-              </span>
-            }
+            icon={<FolderTree size={15} className="text-teal-600" />}
+            label="Category type"
+            value={category.categoryType}
+            accent="teal"
           />
-
           <InfoCard
-            label="Created At"
+            icon={<Calendar size={15} className="text-cyan-600" />}
+            label="Created at"
+            value={new Date(category.createdAt).toLocaleDateString("en-IN", {
+              day: "numeric",
+              month: "short",
+              year: "numeric",
+            })}
+            accent="cyan"
+          />
+          <InfoCard
+            icon={<Tag size={15} className="text-emerald-600" />}
+            label="Category ID"
             value={
-              <span className="flex items-center gap-2 text-gray-700">
-                <Calendar size={15} />
-                {new Date(category.createdAt).toLocaleDateString()}
+              <span className="font-mono text-xs text-gray-500 truncate">
+                {category._id}
               </span>
             }
+            accent="emerald"
           />
         </div>
 
-        {/* IMAGE */}
-        <div className="px-6 pb-6">
-          <h3 className="mb-3 flex items-center gap-2 text-sm font-semibold text-gray-700">
-            <ImageIcon size={16} />
-            Category Image
-          </h3>
-
-          <div className="rounded-2xl border bg-slate-50 p-3">
+        <div className="mt-5 px-6">
+          <p className="mb-2.5 flex items-center gap-2 text-xs font-semibold uppercase tracking-wide text-gray-500">
+            <ImageIcon size={14} />
+            Image preview
+          </p>
+          <div className="overflow-hidden rounded-2xl border border-emerald-100 bg-gradient-to-br from-emerald-50 to-cyan-50 p-2.5">
             <img
               src={imageUrl}
               alt={category.name}
-              className="h-48 w-full rounded-xl border object-cover"
+              className="h-44 w-full rounded-xl object-cover"
             />
           </div>
         </div>
 
-        {/* FOOTER */}
-        <div className="border-t bg-gray-50 px-6 py-4">
+        <div className="mt-5 border-t border-gray-100 bg-gray-50/70 px-6 py-4">
           <button
             onClick={onClose}
-            className="w-full rounded-xl bg-gray-200 py-3 text-sm font-medium text-slate-600 hover:bg-gray-300"
+            className="w-full rounded-xl bg-gradient-to-r from-emerald-500 via-teal-500 to-cyan-500 py-2.5 text-sm font-semibold text-white shadow-sm transition hover:opacity-90 hover:shadow-md active:scale-[0.98]"
           >
-            Close
+            Done
           </button>
         </div>
       </div>
@@ -141,17 +160,33 @@ export const ViewCategory = ({ category, onClose }: Props) => {
   );
 };
 
-// ================= INFO CARD =================
 type InfoCardProps = {
+  icon: React.ReactNode;
   label: string;
   value: React.ReactNode;
+  accent: "emerald" | "teal" | "cyan";
 };
 
-const InfoCard = ({ label, value }: InfoCardProps) => {
+const accentMap = {
+  emerald: "bg-emerald-50 border-emerald-100",
+  teal: "bg-teal-50 border-teal-100",
+  cyan: "bg-cyan-50 border-cyan-100",
+};
+
+const InfoCard = ({ icon, label, value, accent }: InfoCardProps) => {
   return (
-    <div className="flex items-center justify-between rounded-2xl border border-gray-100 bg-gray-50 px-4 py-4 hover:bg-gray-100">
-      <span className="text-sm font-medium text-gray-500">{label}</span>
-      <div className="max-w-[60%] text-sm">{value}</div>
+    <div
+      className={`flex items-center justify-between rounded-xl border px-4 py-3 transition hover:brightness-95 ${accentMap[accent]}`}
+    >
+      <div className="flex items-center gap-2.5">
+        <div className="flex h-7 w-7 items-center justify-center rounded-lg bg-white shadow-sm">
+          {icon}
+        </div>
+        <span className="text-sm font-medium text-gray-500">{label}</span>
+      </div>
+      <div className="max-w-[55%] text-right text-sm font-medium text-gray-800">
+        {value}
+      </div>
     </div>
   );
 };
