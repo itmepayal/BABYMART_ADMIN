@@ -3,6 +3,7 @@ import { useNavigate } from "react-router-dom";
 
 import { Header } from "@/components/dashbaord/Header";
 import { Pagination } from "@/components/dashbaord/Pagination";
+import { ConfirmModal } from "@/components/dashbaord/ConfirmModal";
 
 import {
   Table,
@@ -30,21 +31,172 @@ import {
   RotateCcw,
   Trash,
   XCircle,
-  Tag,
+  Award,
   Loader2Icon,
   Search,
+  ShieldCheck,
+  Star,
 } from "lucide-react";
 
 import { FiPlus, FiRefreshCw } from "react-icons/fi";
 import { defaultAvatar } from "@/assets";
-import { ConfirmModal } from "@/components/dashbaord/ConfirmModal";
 import { ViewBrand } from "@/pages/dashboard/products/brands/ViewBrand";
 import { BrandSkeleton } from "@/components/skeletons/BrandSkeleton";
+
+// ─── Status Badge ────────────────────────────────────────────────────────────
+
+const StatusBadge = ({
+  status,
+}: {
+  status: "active" | "inactive" | "deleted";
+}) => {
+  const styles = {
+    active:
+      "bg-emerald-50 text-emerald-700 border border-emerald-200 ring-1 ring-emerald-100",
+    inactive:
+      "bg-amber-50 text-amber-700 border border-amber-200 ring-1 ring-amber-100",
+    deleted:
+      "bg-slate-100 text-slate-500 border border-slate-200 ring-1 ring-slate-100",
+  };
+
+  const dots = {
+    active: "bg-emerald-500",
+    inactive: "bg-amber-400",
+    deleted: "bg-slate-400",
+  };
+
+  const labels = { active: "Active", inactive: "Inactive", deleted: "Deleted" };
+
+  return (
+    <span
+      className={`inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-xs font-semibold ${styles[status]}`}
+    >
+      <span className={`h-1.5 w-1.5 rounded-full ${dots[status]}`} />
+      {labels[status]}
+    </span>
+  );
+};
+
+// ─── Category Chip ────────────────────────────────────────────────────────────
+
+const CategoryChip = ({ label }: { label: string }) => (
+  <span className="inline-flex items-center rounded-lg bg-teal-50 px-2.5 py-1 text-xs font-semibold text-teal-700 border border-teal-100 capitalize">
+    {label}
+  </span>
+);
+
+// ─── Verified / Featured Badges ───────────────────────────────────────────────
+
+const VerifiedBadge = ({ verified }: { verified: boolean }) =>
+  verified ? (
+    <span className="inline-flex items-center gap-1 rounded-full bg-blue-50 px-2 py-0.5 text-[10px] font-semibold text-blue-600 border border-blue-100">
+      <ShieldCheck size={10} />
+      Verified
+    </span>
+  ) : null;
+
+const FeaturedBadge = ({ featured }: { featured: boolean }) =>
+  featured ? (
+    <span className="inline-flex items-center gap-1 rounded-full bg-violet-50 px-2 py-0.5 text-[10px] font-semibold text-violet-600 border border-violet-100">
+      <Star size={10} />
+      Featured
+    </span>
+  ) : null;
+
+// ─── Bulk Toolbar ─────────────────────────────────────────────────────────────
+
+interface BulkToolbarProps {
+  count: number;
+  onRestore: () => void;
+  onDelete: () => void;
+  onPermanentDelete: () => void;
+  onClear: () => void;
+}
+
+const BulkToolbar = ({
+  count,
+  onRestore,
+  onDelete,
+  onPermanentDelete,
+  onClear,
+}: BulkToolbarProps) => (
+  <div className="flex flex-col gap-3 border-b border-emerald-100 bg-gradient-to-r from-emerald-50 via-teal-50 to-cyan-50 px-6 py-3.5 lg:flex-row lg:items-center lg:justify-between">
+    <div className="flex items-center gap-3">
+      <span className="flex h-9 w-9 items-center justify-center rounded-xl bg-gradient-to-br from-emerald-500 via-teal-500 to-cyan-500 text-xs font-bold text-white shadow-md shadow-teal-200">
+        {count}
+      </span>
+      <div>
+        <p className="text-sm font-semibold text-slate-800">
+          {count} {count === 1 ? "Brand" : "Brands"} selected
+        </p>
+        <p className="text-xs text-slate-500">Choose a bulk action below</p>
+      </div>
+    </div>
+    <div className="flex flex-wrap items-center gap-2">
+      <button
+        onClick={onRestore}
+        className="inline-flex items-center gap-1.5 rounded-lg border border-emerald-200 bg-white px-3.5 py-2 text-xs font-semibold text-emerald-700 shadow-sm transition hover:bg-emerald-50 active:scale-95"
+      >
+        <RotateCcw size={13} />
+        Restore
+      </button>
+      <button
+        onClick={onDelete}
+        className="inline-flex items-center gap-1.5 rounded-lg bg-amber-500 px-3.5 py-2 text-xs font-semibold text-white shadow-sm transition hover:bg-amber-600 active:scale-95"
+      >
+        <Trash2 size={13} />
+        Soft Delete
+      </button>
+      <button
+        onClick={onPermanentDelete}
+        className="inline-flex items-center gap-1.5 rounded-lg bg-rose-600 px-3.5 py-2 text-xs font-semibold text-white shadow-sm transition hover:bg-rose-700 active:scale-95"
+      >
+        <Trash size={13} />
+        Permanent Delete
+      </button>
+      <button
+        onClick={onClear}
+        className="inline-flex items-center gap-1.5 rounded-lg border border-slate-200 bg-white px-3.5 py-2 text-xs font-semibold text-slate-600 shadow-sm transition hover:bg-slate-50 active:scale-95"
+      >
+        <XCircle size={13} />
+        Clear
+      </button>
+    </div>
+  </div>
+);
+
+// ─── Empty State ──────────────────────────────────────────────────────────────
+
+const EmptyState = ({ searching }: { searching: boolean }) => (
+  <TableRow>
+    <TableCell colSpan={8}>
+      <div className="flex flex-col items-center justify-center gap-4 py-20 text-center">
+        <div className="relative">
+          <div className="flex h-16 w-16 items-center justify-center rounded-2xl bg-gradient-to-br from-emerald-100 via-teal-100 to-cyan-100 shadow-inner">
+            <Award className="h-7 w-7 text-teal-500" />
+          </div>
+          <div className="absolute -inset-1 rounded-2xl bg-gradient-to-br from-emerald-300 via-teal-300 to-cyan-300 opacity-20 blur-sm -z-10" />
+        </div>
+        <div>
+          <p className="text-sm font-semibold text-slate-700">
+            {searching ? "No matching brands" : "No brands yet"}
+          </p>
+          <p className="mt-1 text-xs text-slate-400">
+            {searching
+              ? "Try a different search term"
+              : "Add your first brand to get started"}
+          </p>
+        </div>
+      </div>
+    </TableCell>
+  </TableRow>
+);
+
+// ─── Main Component ───────────────────────────────────────────────────────────
 
 const Brands = () => {
   const navigate = useNavigate();
 
-  // ================= STATE =================
   const [selectedBrands, setSelectedBrands] = useState<string[]>([]);
   const [search, setSearch] = useState("");
   const [open, setOpen] = useState(false);
@@ -54,12 +206,10 @@ const Brands = () => {
   const [bulkDeleteOpen, setBulkDeleteOpen] = useState(false);
   const [permanentDeleteOpen, setPermanentDeleteOpen] = useState(false);
 
-  // ================= DATA =================
   const { brands, loading, refetch, isFetchingBrands, page, pages, total } =
     useBrands();
 
   const { handleDeleteBrand } = useDeleteBrand();
-
   const {
     handleBulkDelete,
     handleBulkRestore,
@@ -67,320 +217,240 @@ const Brands = () => {
     loading: bulkLoading,
   } = useBrandBulkActions();
 
-  // ================= FILTER =================
   const filteredBrands = brands;
-
-  // ================= SELECTION =================
-  const toggleSelectAll = () => {
-    if (selectedBrands.length === filteredBrands.length) {
-      setSelectedBrands([]);
-    } else {
-      setSelectedBrands(filteredBrands.map((brand) => brand._id));
-    }
-  };
-
-  const toggleSelection = (id: string) => {
-    setSelectedBrands((prev) =>
-      prev.includes(id) ? prev.filter((brand) => brand !== id) : [...prev, id],
-    );
-  };
 
   const isAllSelected =
     filteredBrands.length > 0 &&
     selectedBrands.length === filteredBrands.length;
 
-  // ================= BULK ACTIONS =================
-  const handleRestoreClick = async () => {
-    await handleBulkRestore(selectedBrands);
-    await refetch({
-      page,
-      limit: 10,
-      search,
-    });
-    setSelectedBrands([]);
-  };
+  const toggleSelectAll = () =>
+    setSelectedBrands(isAllSelected ? [] : filteredBrands.map((b) => b._id));
 
-  const handleBulkDeleteClick = async () => {
-    await handleBulkDelete(selectedBrands);
-    await refetch({
-      page,
-      limit: 10,
-      search,
-    });
-    setSelectedBrands([]);
-  };
+  const toggleSelection = (id: string) =>
+    setSelectedBrands((prev) =>
+      prev.includes(id) ? prev.filter((x) => x !== id) : [...prev, id],
+    );
 
-  const handlePermanentDeleteClick = async () => {
-    await handleBulkPermanentDelete(selectedBrands);
-    await refetch({
-      page,
-      limit: 10,
-      search,
-    });
-    setSelectedBrands([]);
-  };
-
-  // ================= STATUS =================
-  const getBrandStatus = (brand: any) => {
+  const getBrandStatus = (brand: any): "active" | "inactive" | "deleted" => {
     if (brand.isDeleted) return "deleted";
     if (brand.isActive) return "active";
     return "inactive";
   };
 
-  /* ================= REFETCH ================= */
-  useEffect(() => {
-    const timer = setTimeout(() => {
-      refetch({
-        page: 1,
-        limit: 10,
-        search,
-      });
-    }, 2000);
+  const doRefetch = (p = page) => refetch({ page: p, limit: 10, search });
 
-    return () => clearTimeout(timer);
+  const handleRestoreClick = async () => {
+    await handleBulkRestore(selectedBrands);
+    await doRefetch();
+    setSelectedBrands([]);
+  };
+
+  const handleBulkDeleteClick = async () => {
+    await handleBulkDelete(selectedBrands);
+    await doRefetch();
+    setSelectedBrands([]);
+  };
+
+  const handlePermanentDeleteClick = async () => {
+    await handleBulkPermanentDelete(selectedBrands);
+    await doRefetch();
+    setSelectedBrands([]);
+  };
+
+  useEffect(() => {
+    const t = setTimeout(() => refetch({ page: 1, limit: 10, search }), 500);
+    return () => clearTimeout(t);
   }, [search, refetch]);
 
-  /* ================= SKELETON ================= */
-  if (loading) {
-    return <BrandSkeleton />;
-  }
+  if (loading) return <BrandSkeleton />;
 
   return (
-    <div className="space-y-6">
-      {/* ================= PAGE HEADER ================= */}
+    <div className="space-y-5">
       <Header
-        title="Brands Management"
-        description="Manage brands, visibility and status."
-        icon={Tag}
+        title="Brands"
+        description="Manage brand logos, banners, categories, and visibility."
+        icon={Award}
         actionLabel="Add Brand"
         actionIcon={FiPlus}
         onAction={() => navigate("/dashboard/brands/create")}
         refreshIcon={FiRefreshCw}
-        onRefresh={() =>
-          refetch({
-            page,
-            limit: 10,
-            search,
-          })
-        }
+        onRefresh={() => doRefetch()}
         isRefreshing={loading}
       />
 
-      {/* ================= SEARCH BAR ================= */}
-      <div className="rounded-2xl border border-slate-200 bg-white px-4 py-4 shadow-sm">
-        <div className="relative w-full max-w-md">
-          <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400" />
+      <div className="rounded-2xl border border-slate-200 bg-white px-4 py-3.5 shadow-sm">
+        <div className="relative w-full max-w-sm">
+          <div className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 flex items-center justify-center">
+            <Search className="h-4 w-4 text-teal-500" />
+          </div>
           <input
             type="text"
             value={search}
             onChange={(e) => setSearch(e.target.value)}
-            placeholder="Search brands by name..."
-            className="w-full rounded-xl border border-slate-200 bg-slate-50 py-3 pl-10 pr-10 text-sm text-slate-700 outline-none transition-all placeholder:text-slate-400 focus:border-emerald-500 focus:bg-white focus:ring-2 focus:ring-emerald-100"
+            placeholder="Search by name…"
+            className="w-full rounded-xl border border-slate-200 bg-slate-50 py-2.5 pl-9 pr-9 text-sm text-slate-700 outline-none placeholder:text-slate-400 focus:border-teal-400 focus:bg-white focus:ring-2 focus:ring-teal-100 transition-all"
           />
-
           {search && (
             <button
               onClick={() => setSearch("")}
-              className="absolute right-3 top-1/2 -translate-y-1/2 rounded-full p-1 text-slate-400 hover:bg-slate-100"
+              className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600"
+              aria-label="Clear search"
             >
-              ✕
+              <XCircle size={15} />
             </button>
           )}
         </div>
       </div>
 
-      {/* ================= TABLE SECTION ================= */}
       <div className="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm">
-        {/* ================= BULK TOOLBAR ================= */}
         {selectedBrands.length > 0 && (
-          <div className="sticky top-0 z-20 border-b border-slate-200 bg-white/95 px-6 py-4 backdrop-blur-md">
-            <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
-              <div className="flex items-center gap-4">
-                <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-emerald-100">
-                  <span className="text-base font-bold text-emerald-700">
-                    {selectedBrands.length}
-                  </span>
-                </div>
-
-                <div>
-                  <h3 className="text-sm font-semibold text-slate-900">
-                    {selectedBrands.length} Brand
-                    {selectedBrands.length > 1 ? "s" : ""} Selected
-                  </h3>
-                  <p className="text-xs text-slate-500">
-                    Manage selected brands with bulk actions
-                  </p>
-                </div>
-              </div>
-
-              <div className="flex flex-wrap items-center gap-3">
-                <button
-                  onClick={handleRestoreClick}
-                  className="inline-flex items-center gap-2 rounded-xl border border-emerald-200 bg-emerald-50 px-4 py-2.5 text-sm font-medium text-emerald-700 hover:bg-emerald-100"
-                >
-                  <RotateCcw size={16} />
-                  Restore
-                </button>
-
-                <button
-                  onClick={() => setBulkDeleteOpen(true)}
-                  className="inline-flex items-center gap-2 rounded-xl bg-amber-500 px-4 py-2.5 text-sm font-medium text-white hover:bg-amber-600"
-                >
-                  <Trash2 size={16} />
-                  Delete
-                </button>
-
-                <button
-                  onClick={() => setPermanentDeleteOpen(true)}
-                  className="inline-flex items-center gap-2 rounded-xl bg-red-600 px-4 py-2.5 text-sm font-medium text-white hover:bg-red-700"
-                >
-                  <Trash size={16} />
-                  Permanent Delete
-                </button>
-
-                <button
-                  onClick={() => setSelectedBrands([])}
-                  className="inline-flex items-center gap-2 rounded-xl border border-slate-200 bg-white px-4 py-2.5 text-sm font-medium text-slate-700 hover:bg-slate-50"
-                >
-                  <XCircle size={16} />
-                  Clear
-                </button>
-              </div>
-            </div>
-          </div>
+          <BulkToolbar
+            count={selectedBrands.length}
+            onRestore={handleRestoreClick}
+            onDelete={() => setBulkDeleteOpen(true)}
+            onPermanentDelete={() => setPermanentDeleteOpen(true)}
+            onClear={() => setSelectedBrands([])}
+          />
         )}
 
-        {/* ================= TABLE ================= */}
-        <div className="overflow-x-auto rounded-2xl border border-slate-200">
-          <Table className="min-w-[900px]">
+        <div className="overflow-x-auto">
+          <Table className="min-w-[960px]">
             <TableHeader>
-              <TableRow className="bg-slate-50 hover:bg-slate-50 h-14">
-                <TableHead className="w-[50px] text-center">
+              <TableRow className="border-b border-slate-100 bg-gradient-to-r from-emerald-50/60 via-teal-50/40 to-cyan-50/60 hover:from-emerald-50/60 hover:via-teal-50/40 hover:to-cyan-50/60">
+                <TableHead className="w-10 pl-5">
                   <input
                     type="checkbox"
                     checked={isAllSelected}
                     onChange={toggleSelectAll}
-                    className="h-4 w-4 rounded border-slate-300"
+                    className="h-4 w-4 cursor-pointer rounded border-slate-300 accent-teal-600"
+                    aria-label="Select all"
                   />
                 </TableHead>
-
-                <TableHead>Brand</TableHead>
-                <TableHead>Created At</TableHead>
-                <TableHead>Updated At</TableHead>
-                <TableHead className="text-center">Status</TableHead>
-                <TableHead className="text-center">Actions</TableHead>
+                {["Brand", "Category", "Badges", "Created", "Updated"].map(
+                  (h) => (
+                    <TableHead
+                      key={h}
+                      className="text-xs font-bold uppercase tracking-widest text-teal-700/70"
+                    >
+                      {h}
+                    </TableHead>
+                  ),
+                )}
+                <TableHead className="text-center text-xs font-bold uppercase tracking-widest text-teal-700/70">
+                  Status
+                </TableHead>
+                <TableHead className="pr-5 text-center text-xs font-bold uppercase tracking-widest text-teal-700/70">
+                  Actions
+                </TableHead>
               </TableRow>
             </TableHeader>
 
             <TableBody>
               {isFetchingBrands ? (
                 <TableRow>
-                  <TableCell colSpan={6} className="py-20 text-center">
+                  <TableCell colSpan={8} className="py-20 text-center">
                     <div className="flex flex-col items-center gap-3">
-                      <Loader2Icon className="h-6 w-6 animate-spin text-slate-400" />
-                      <p className="text-sm text-slate-500">
-                        Loading brands...
+                      <div className="relative flex h-10 w-10 items-center justify-center">
+                        <div className="absolute inset-0 rounded-full bg-gradient-to-br from-emerald-400 via-teal-400 to-cyan-400 opacity-20 blur-md" />
+                        <Loader2Icon className="h-6 w-6 animate-spin text-teal-500" />
+                      </div>
+                      <p className="text-xs font-medium text-slate-500">
+                        Loading brands…
                       </p>
                     </div>
                   </TableCell>
                 </TableRow>
               ) : filteredBrands.length === 0 ? (
-                <TableRow>
-                  <TableCell colSpan={6} className="py-20 text-center">
-                    <p className="text-sm font-medium text-slate-600">
-                      No brands found
-                    </p>
-                    <p className="mt-1 text-xs text-slate-400">
-                      Try creating a new brand
-                    </p>
-                  </TableCell>
-                </TableRow>
+                <EmptyState searching={search.length > 0} />
               ) : (
                 filteredBrands.map((brand) => {
                   const status = getBrandStatus(brand);
-
+                  const isSelected = selectedBrands.includes(brand._id);
                   return (
                     <TableRow
                       key={brand._id}
-                      className="border-b border-slate-100 hover:bg-slate-50"
+                      data-selected={isSelected}
+                      className="group border-b border-slate-100 transition-colors hover:bg-gradient-to-r hover:from-emerald-50/30 hover:via-teal-50/20 hover:to-cyan-50/30 data-[selected=true]:bg-gradient-to-r data-[selected=true]:from-emerald-50/50 data-[selected=true]:via-teal-50/30 data-[selected=true]:to-cyan-50/50"
                     >
-                      <TableCell className="text-center">
+                      <TableCell className="pl-5">
                         <input
                           type="checkbox"
-                          checked={selectedBrands.includes(brand._id)}
+                          checked={isSelected}
                           onChange={() => toggleSelection(brand._id)}
-                          className="h-4 w-4 rounded border-slate-300"
+                          className="h-4 w-4 cursor-pointer rounded border-slate-300 accent-teal-600"
                         />
                       </TableCell>
+
                       <TableCell>
                         <div className="flex items-center gap-3">
-                          <img
-                            src={brand.images?.[0]?.url || defaultAvatar}
-                            alt={brand.name}
-                            className="h-12 w-12 rounded-xl border object-cover"
-                          />
-
+                          <div className="relative flex-shrink-0">
+                            <div className="absolute -inset-[2px] rounded-xl bg-gradient-to-br from-emerald-400 via-teal-400 to-cyan-400 opacity-0 group-hover:opacity-100 transition-opacity duration-200 blur-[1px]" />
+                            <img
+                              src={brand.logo?.url || defaultAvatar}
+                              alt={brand.name}
+                              className="relative h-10 w-10 rounded-xl border border-slate-200 object-cover shadow-sm bg-white"
+                            />
+                            {status === "active" && (
+                              <span className="absolute -bottom-0.5 -right-0.5 h-2.5 w-2.5 rounded-full border-2 border-white bg-emerald-500 shadow-sm" />
+                            )}
+                          </div>
                           <div>
-                            <p className="text-sm font-semibold text-slate-900">
+                            <p className="text-sm font-semibold text-slate-800 leading-tight">
                               {brand.name}
                             </p>
-                            <p className="text-xs text-slate-400">
-                              ID: {brand._id.slice(0, 8)}
+                            <p className="mt-0.5 font-mono text-[10px] text-slate-400">
+                              #{brand._id.slice(0, 8)}
                             </p>
                           </div>
                         </div>
                       </TableCell>
 
                       <TableCell>
-                        <div className="flex">
-                          <span className="inline-flex items-center text-sm font-medium text-slate-700">
-                            {new Date(brand.createdAt).toLocaleDateString(
-                              "en-IN",
-                              {
-                                day: "2-digit",
-                                month: "short",
-                                year: "numeric",
-                              },
-                            )}
-                          </span>
+                        <CategoryChip label={brand.category} />
+                      </TableCell>
+
+                      <TableCell>
+                        <div className="flex flex-wrap gap-1">
+                          <VerifiedBadge verified={brand.isVerified} />
+                          <FeaturedBadge featured={brand.isFeatured} />
+                          {!brand.isVerified && !brand.isFeatured && (
+                            <span className="text-xs text-slate-400">—</span>
+                          )}
                         </div>
                       </TableCell>
 
                       <TableCell>
-                        <div className="flex">
-                          <span className="inline-flex items-center text-sm font-medium text-slate-700">
-                            {new Date(brand.updatedAt).toLocaleDateString(
-                              "en-IN",
-                              {
-                                day: "2-digit",
-                                month: "short",
-                                year: "numeric",
-                              },
-                            )}
-                          </span>
-                        </div>
-                      </TableCell>
-
-                      <TableCell className="text-center">
-                        <span
-                          className={`rounded-full px-3 py-1 text-xs font-medium ${
-                            status === "active"
-                              ? "bg-emerald-50 text-emerald-700"
-                              : status === "deleted"
-                                ? "bg-slate-100 text-slate-600"
-                                : "bg-red-50 text-red-700"
-                          }`}
-                        >
-                          {status === "active"
-                            ? "Active"
-                            : status === "deleted"
-                              ? "Deleted"
-                              : "Inactive"}
+                        <span className="text-sm text-slate-600">
+                          {new Date(brand.createdAt).toLocaleDateString(
+                            "en-IN",
+                            {
+                              day: "2-digit",
+                              month: "short",
+                              year: "numeric",
+                            },
+                          )}
                         </span>
                       </TableCell>
 
                       <TableCell>
-                        <div className="flex items-center justify-center gap-2">
+                        <span className="text-sm text-slate-600">
+                          {new Date(brand.updatedAt).toLocaleDateString(
+                            "en-IN",
+                            {
+                              day: "2-digit",
+                              month: "short",
+                              year: "numeric",
+                            },
+                          )}
+                        </span>
+                      </TableCell>
+
+                      <TableCell className="text-center">
+                        <StatusBadge status={status} />
+                      </TableCell>
+
+                      <TableCell className="pr-5">
+                        <div className="flex items-center justify-center gap-1.5">
                           {!brand.isDeleted ? (
                             <>
                               <ViewButton
@@ -389,7 +459,6 @@ const Brands = () => {
                                   setViewOpen(true);
                                 }}
                               />
-
                               <EditButton
                                 onClick={() =>
                                   navigate(
@@ -397,7 +466,6 @@ const Brands = () => {
                                   )
                                 }
                               />
-
                               <DeleteButton
                                 onClick={() => {
                                   setSelectedBrand(brand);
@@ -406,22 +474,16 @@ const Brands = () => {
                               />
                             </>
                           ) : (
-                            <>
-                              <button
-                                onClick={async () => {
-                                  await handleBulkRestore([brand._id]);
-                                  await refetch({
-                                    page,
-                                    limit: 10,
-                                    search,
-                                  });
-                                }}
-                                className="inline-flex items-center gap-2 rounded-xl border border-emerald-200 bg-emerald-50 px-4 py-2.5 text-sm font-medium text-emerald-700 transition-all hover:bg-emerald-100"
-                              >
-                                <RotateCcw size={16} />
-                                Restore
-                              </button>
-                            </>
+                            <button
+                              onClick={async () => {
+                                await handleBulkRestore([brand._id]);
+                                await doRefetch();
+                              }}
+                              className="inline-flex items-center gap-1.5 rounded-lg border border-emerald-200 bg-gradient-to-r from-emerald-50 to-teal-50 px-3 py-1.5 text-xs font-semibold text-emerald-700 transition hover:from-emerald-100 hover:to-teal-100 active:scale-95 shadow-sm"
+                            >
+                              <RotateCcw size={12} />
+                              Restore
+                            </button>
                           )}
                         </div>
                       </TableCell>
@@ -431,66 +493,61 @@ const Brands = () => {
               )}
             </TableBody>
           </Table>
-
-          <ConfirmModal
-            open={open}
-            userName={selectedBrand?.name || "brand"}
-            onClose={() => {
-              setOpen(false);
-              setSelectedBrand(null);
-            }}
-            onConfirm={async () => {
-              if (!selectedBrand) return;
-              await handleDeleteBrand(selectedBrand._id);
-              setOpen(false);
-              setSelectedBrand(null);
-            }}
-            loading={loading}
-          />
-
-          <ConfirmModal
-            open={bulkDeleteOpen}
-            userName={`${selectedBrands.length} brands`}
-            onClose={() => setBulkDeleteOpen(false)}
-            onConfirm={async () => {
-              await handleBulkDeleteClick();
-              setBulkDeleteOpen(false);
-            }}
-            loading={bulkLoading}
-          />
-
-          <ConfirmModal
-            open={permanentDeleteOpen}
-            userName={`${selectedBrands.length} brands`}
-            onClose={() => setPermanentDeleteOpen(false)}
-            onConfirm={async () => {
-              await handlePermanentDeleteClick();
-              setPermanentDeleteOpen(false);
-            }}
-            loading={bulkLoading}
-          />
-
-          <ViewBrand
-            brand={viewBrand}
-            onClose={() => {
-              setViewOpen(false);
-              setViewBrand(null);
-            }}
-          />
         </div>
+
         <Pagination
           page={page}
           pages={pages}
           total={total}
-          onChange={(p) =>
-            refetch({
-              page: p,
-              limit: 10,
-              search,
-            })
-          }
+          onChange={(p) => doRefetch(p)}
         />
       </div>
+
+      <ConfirmModal
+        open={open}
+        userName={selectedBrand?.name ?? "brand"}
+        onClose={() => {
+          setOpen(false);
+          setSelectedBrand(null);
+        }}
+        onConfirm={async () => {
+          if (!selectedBrand) return;
+          await handleDeleteBrand(selectedBrand._id);
+          setOpen(false);
+          setSelectedBrand(null);
+        }}
+        loading={loading}
+      />
+
+      <ConfirmModal
+        open={bulkDeleteOpen}
+        userName={`${selectedBrands.length} brands`}
+        onClose={() => setBulkDeleteOpen(false)}
+        onConfirm={async () => {
+          await handleBulkDeleteClick();
+          setBulkDeleteOpen(false);
+        }}
+        loading={bulkLoading}
+      />
+
+      <ConfirmModal
+        open={permanentDeleteOpen}
+        userName={`${selectedBrands.length} brands`}
+        onClose={() => setPermanentDeleteOpen(false)}
+        onConfirm={async () => {
+          await handlePermanentDeleteClick();
+          setPermanentDeleteOpen(false);
+        }}
+        loading={bulkLoading}
+      />
+
+      <ViewBrand
+        brand={viewBrand}
+        onClose={() => {
+          setViewOpen(false);
+          setViewBrand(null);
+        }}
+      />
     </div>
   );
 };

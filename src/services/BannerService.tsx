@@ -1,113 +1,208 @@
 import { api } from "@/lib/config";
 
-// ================= IMAGE TYPE =================
+// =========================================
+// ENUMS
+// =========================================
+
+export const BannerType = {
+  HOME: "home",
+  OFFER: "offer",
+  CATEGORY: "category",
+  PRODUCT: "product",
+  FLASH_SALE: "flash-sale",
+  SEASONAL: "seasonal",
+} as const;
+
+export type BannerType = (typeof BannerType)[keyof typeof BannerType];
+
+export const SortOrder = {
+  ASC: "asc",
+  DESC: "desc",
+} as const;
+
+export type SortOrder = (typeof SortOrder)[keyof typeof SortOrder];
+
+export const BannerSortField = {
+  CREATED_AT: "createdAt",
+  UPDATED_AT: "updatedAt",
+  PRIORITY: "priority",
+  TITLE: "title",
+  NAME: "name",
+} as const;
+
+export type BannerSortField =
+  (typeof BannerSortField)[keyof typeof BannerSortField];
+
+// =========================================
+// IMAGE TYPE
+// =========================================
+
 export type BannerImage = {
   url: string;
   public_id: string;
 };
 
-// ================= TYPES =================
+// =========================================
+// BANNER TYPE
+// =========================================
+
 export type Banner = {
   _id: string;
   name: string;
   title: string;
-  startFrom: string;
-  image: BannerImage;
-  bannerType: "home" | "offer" | "category" | "product";
+  subtitle?: string;
+  description?: string;
+  slug: string;
+  desktopImage: BannerImage;
+  mobileImage?: BannerImage;
+  bannerType: BannerType;
+  redirectUrl?: string;
+  buttonText?: string;
+  startFrom?: string;
+  discountPercentage?: number;
+  priority: number;
+  startDate?: string;
+  endDate?: string;
+  isFeatured: boolean;
   isActive: boolean;
   isDeleted: boolean;
   deletedAt: string | null;
+  seoTitle?: string;
+  seoDescription?: string;
   createdAt: string;
   updatedAt: string;
 };
 
-// ================= CREATE =================
+// =========================================
+// CREATE PAYLOAD
+// =========================================
+
 export type CreateBannerPayload = {
   name: string;
   title: string;
-  startFrom: string;
-  bannerType: Banner["bannerType"];
+  subtitle?: string;
+  description?: string;
+  bannerType: BannerType;
+  redirectUrl?: string;
+  buttonText?: string;
+  startFrom?: string;
+  discountPercentage?: number;
+  priority?: number;
+  startDate?: string;
+  endDate?: string;
+  isFeatured?: boolean;
   isActive?: boolean;
-  image: File;
+  seoTitle?: string;
+  seoDescription?: string;
+  desktopImage: File;
+  mobileImage?: File;
 };
 
-// ================= UPDATE =================
-export type UpdateBannerPayload = Partial<{
-  name: string;
-  title: string;
-  startFrom: string;
-  bannerType: Banner["bannerType"];
-  isActive: boolean;
-  image: File;
-}>;
+// =========================================
+// UPDATE PAYLOAD
+// =========================================
 
-// ================= QUERY PARAMS =================
-type GetAllBannersParams = {
+export type UpdateBannerPayload = Partial<CreateBannerPayload>;
+
+// =========================================
+// QUERY PARAMS
+// =========================================
+
+export type GetAllBannersParams = {
   page?: number;
   limit?: number;
   search?: string;
+  bannerType?: BannerType;
+  isActive?: boolean;
+  isFeatured?: boolean;
+  sortBy?: BannerSortField;
+  sortOrder?: SortOrder;
 };
 
-// ================= RESPONSE =================
-type GetAllBannersResponse = {
+// =========================================
+// PAGINATION RESPONSE
+// =========================================
+
+export type BannerPaginationData = {
+  banners: Banner[];
+  total: number;
+  page: number;
+  limit: number;
+  pages: number;
+};
+
+// =========================================
+// API RESPONSE
+// =========================================
+
+export type GetAllBannersResponse = {
   success: boolean;
   message: string;
-  data: {
-    banners: Banner[];
-    total: number;
-    page: number;
-    pages: number;
-  };
+  data: BannerPaginationData;
 };
 
-// ================= BANNER SERVICE =================
+// =========================================
+// BANNER SERVICE
+// =========================================
+
 export const bannerService = {
-  // =========================================
+  // =====================================
   // GET ALL BANNERS
-  // =========================================
+  // =====================================
   getAllBanners: async (
     params: GetAllBannersParams = {},
   ): Promise<GetAllBannersResponse> => {
-    const { page = 1, limit = 10, search = "" } = params;
-
-    const { data } = await api.get("/banners", {
-      params: { page, limit, search },
+    const { data } = await api.get<GetAllBannersResponse>("/banners/admin", {
+      params,
     });
+
+    console.log(data);
+
     return data;
   },
 
-  // =========================================
+  // =====================================
   // GET ACTIVE BANNERS
-  // =========================================
+  // =====================================
+
   getActiveBanners: async () => {
     const { data } = await api.get("/banners/active");
     return data;
   },
 
-  // =========================================
-  // GET BY ID
-  // =========================================
+  // =====================================
+  // GET BANNER BY ID
+  // =====================================
+
   getBannerById: async (id: string) => {
     const { data } = await api.get(`/banners/${id}`);
+
     return data;
   },
 
-  // =========================================
+  // =====================================
   // CREATE BANNER
-  // =========================================
-  createBanner: async (payload: FormData) => {
-    const { data } = await api.post("/banners", payload, {
-      headers: {
-        "Content-Type": "multipart/form-data",
-      },
-    });
+  // =====================================
 
-    return data;
+  createBanner: async (payload: FormData) => {
+    try {
+      const { data } = await api.post("/banners", payload, {
+        headers: {
+          "Content-Type": "multipart/form-data",
+        },
+      });
+      console.log(data);
+
+      return data;
+    } catch (error) {
+      console.log(error);
+    }
   },
 
-  // =========================================
+  // =====================================
   // UPDATE BANNER
-  // =========================================
+  // =====================================
+
   updateBanner: async (id: string, payload: FormData) => {
     const { data } = await api.patch(`/banners/${id}`, payload, {
       headers: {
@@ -118,41 +213,54 @@ export const bannerService = {
     return data;
   },
 
-  // =========================================
+  // =====================================
   // TOGGLE STATUS
-  // =========================================
+  // =====================================
+
   toggleBannerStatus: async (id: string) => {
     const { data } = await api.patch(`/banners/toggle/${id}`);
+
     return data;
   },
 
-  // =========================================
-  // SINGLE DELETE (SOFT DELETE)
-  // =========================================
+  // =====================================
+  // DELETE BANNER (SOFT DELETE)
+  // =====================================
+
   deleteBanner: async (id: string) => {
     const { data } = await api.delete(`/banners/${id}`);
+
     return data;
   },
 
-  // =========================================
+  // =====================================
   // BULK DELETE
-  // =========================================
+  // =====================================
+
   bulkDeleteBanners: async (ids: string[]) => {
-    const { data } = await api.patch("/banners/bulk/delete", { ids });
+    const { data } = await api.patch("/banners/bulk/delete", {
+      ids,
+    });
+
     return data;
   },
 
-  // =========================================
+  // =====================================
   // BULK RESTORE
-  // =========================================
+  // =====================================
+
   bulkRestoreBanners: async (ids: string[]) => {
-    const { data } = await api.patch("/banners/bulk/restore", { ids });
+    const { data } = await api.patch("/banners/bulk/restore", {
+      ids,
+    });
+
     return data;
   },
 
-  // =========================================
+  // =====================================
   // BULK PERMANENT DELETE
-  // =========================================
+  // =====================================
+
   bulkPermanentDeleteBanners: async (ids: string[]) => {
     const { data } = await api.delete("/banners/bulk/permanent", {
       data: { ids },

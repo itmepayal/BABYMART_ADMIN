@@ -3,13 +3,20 @@ import { bannerService } from "@/services/BannerService";
 
 // ================= TYPES =================
 export type Banner = {
+  isFeatured: any;
+  bannerType: string;
   _id: string;
 
   name: string;
   title: string;
   description?: string;
 
-  image: {
+  desktopImage: {
+    url: string;
+    public_id: string;
+  };
+
+  mobileImage?: {
     url: string;
     public_id: string;
   };

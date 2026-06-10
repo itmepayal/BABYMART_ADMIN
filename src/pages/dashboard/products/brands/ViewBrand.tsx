@@ -1,10 +1,12 @@
 import {
   X,
   Image as ImageIcon,
-  Layers,
   CheckCircle,
   XCircle,
   Calendar,
+  Tag,
+  Globe,
+  Layers,
 } from "lucide-react";
 
 import { defaultAvatar } from "@/assets";
@@ -17,7 +19,14 @@ type ImageType = {
 type BrandType = {
   _id: string;
   name: string;
-  images: ImageType[];
+  slug: string;
+  description?: string;
+  logo: ImageType;
+  banners?: ImageType[];
+  website?: string;
+  category: string;
+  isFeatured: boolean;
+  isVerified: boolean;
   isActive: boolean;
   createdAt: string;
 };
@@ -30,107 +39,172 @@ type Props = {
 export const ViewBrand = ({ brand, onClose }: Props) => {
   if (!brand) return null;
 
+  const logoUrl = brand.logo?.url || defaultAvatar;
+
   return (
     <div
       onClick={onClose}
-      className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-md p-4"
+      className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4 backdrop-blur-sm"
     >
       <div
         onClick={(e) => e.stopPropagation()}
-        className="relative w-full max-w-lg overflow-hidden rounded-3xl bg-white shadow-2xl animate-in fade-in zoom-in-95 duration-300"
+        className="animate-in fade-in zoom-in-95 relative w-full max-w-md overflow-hidden rounded-3xl bg-white shadow-2xl duration-200"
       >
-        {/* HEADER */}
-        <div className="relative h-32 bg-gradient-to-r from-emerald-500 via-teal-500 to-cyan-500">
+        <div className="relative h-36 bg-gradient-to-br from-emerald-500 via-teal-500 to-cyan-500">
+          <div className="absolute -bottom-8 -right-8 h-32 w-32 rounded-full bg-white/10" />
+          <div className="absolute -bottom-14 -right-14 h-48 w-48 rounded-full bg-white/5" />
+          <div className="absolute -top-6 -left-6 h-24 w-24 rounded-full bg-white/10" />
+
+          <div className="absolute bottom-14 left-6">
+            <p className="text-xs -mt-18 font-semibold uppercase tracking-widest text-white/70">
+              Brand Details
+            </p>
+          </div>
+
           <button
             onClick={onClose}
-            className="absolute right-4 top-4 rounded-full bg-white/20 p-2 text-white hover:bg-white/30"
+            className="absolute right-4 top-4 flex h-8 w-8 items-center justify-center rounded-full bg-white/20 text-white transition hover:bg-white/30 hover:scale-105"
           >
-            <X size={18} />
+            <X size={16} />
           </button>
         </div>
 
-        {/* BRAND PROFILE */}
-        <div className="relative px-6 pb-6 text-center">
-          <img
-            src={brand.images?.[0]?.url || defaultAvatar}
-            alt={brand.name}
-            className="mx-auto -mt-14 h-28 w-28 rounded-full border-4 border-white object-cover shadow-xl"
-          />
+        <div className="relative px-6">
+          <div className="-mt-26 flex items-end gap-4">
+            <div className="relative shrink-0">
+              <img
+                src={logoUrl}
+                alt={brand.name}
+                className="h-24 w-24 rounded-2xl border-4 border-white object-cover shadow-xl"
+              />
 
-          <h2 className="mt-4 text-2xl font-bold text-gray-900">
-            {brand.name}
-          </h2>
+              <span
+                className={`absolute -bottom-1 -right-1 h-4 w-4 rounded-full border-2 border-white ${
+                  brand.isActive ? "bg-emerald-500" : "bg-red-400"
+                }`}
+              />
+            </div>
 
-          {/* STATUS */}
-          <div className="mt-4">
-            <span
-              className={`inline-flex items-center gap-2 rounded-full px-4 py-2 text-xs font-semibold uppercase tracking-wide ${
-                brand.isActive
-                  ? "bg-emerald-50 text-emerald-700"
-                  : "bg-red-50 text-red-600"
-              }`}
-            >
-              {brand.isActive ? (
-                <CheckCircle size={14} />
-              ) : (
-                <XCircle size={14} />
-              )}
-              {brand.isActive ? "Active" : "Inactive"}
-            </span>
+            <div className="min-w-0 pb-2">
+              <h2 className="truncate text-xl font-bold leading-tight text-white">
+                {brand.name}
+              </h2>
+
+              <span
+                className={`mt-1.5 inline-flex items-center gap-1.5 rounded-full px-3 py-1 text-[11px] font-semibold uppercase tracking-wide ${
+                  brand.isActive
+                    ? "bg-emerald-50 text-emerald-700"
+                    : "bg-red-50 text-red-600"
+                }`}
+              >
+                {brand.isActive ? (
+                  <CheckCircle size={12} />
+                ) : (
+                  <XCircle size={12} />
+                )}
+
+                {brand.isActive ? "Active" : "Inactive"}
+              </span>
+            </div>
           </div>
         </div>
 
-        {/* DETAILS */}
-        <div className="space-y-3 px-6 pb-6">
+        <div className="mt-5 space-y-2.5 px-6">
           <InfoCard
-            label="Total Images"
-            value={
-              <span className="flex items-center gap-2 text-gray-700">
-                <Layers size={15} />
-                {brand.images?.length || 0}
-              </span>
-            }
+            icon={<Tag size={15} className="text-teal-600" />}
+            label="Category"
+            value={brand.category}
+            accent="teal"
           />
 
           <InfoCard
-            label="Created At"
+            icon={<Layers size={15} className="text-cyan-600" />}
+            label="Banners"
+            value={brand.banners?.length || 0}
+            accent="cyan"
+          />
+
+          {brand.website && (
+            <InfoCard
+              icon={<Globe size={15} className="text-emerald-600" />}
+              label="Website"
+              value={
+                <a
+                  href={brand.website}
+                  target="_blank"
+                  rel="noreferrer"
+                  className="truncate text-cyan-600 hover:underline"
+                >
+                  Visit
+                </a>
+              }
+              accent="emerald"
+            />
+          )}
+
+          <InfoCard
+            icon={<Calendar size={15} className="text-cyan-600" />}
+            label="Created at"
+            value={new Date(brand.createdAt).toLocaleDateString("en-IN", {
+              day: "numeric",
+              month: "short",
+              year: "numeric",
+            })}
+            accent="cyan"
+          />
+
+          <InfoCard
+            icon={<Tag size={15} className="text-emerald-600" />}
+            label="Brand ID"
             value={
-              <span className="flex items-center gap-2 text-gray-700">
-                <Calendar size={15} />
-                {new Date(brand.createdAt).toLocaleDateString()}
+              <span className="font-mono text-xs text-gray-500 truncate">
+                {brand._id}
               </span>
             }
+            accent="emerald"
           />
         </div>
 
-        {/* IMAGES GRID */}
-        {brand.images && brand.images.length > 0 && (
-          <div className="px-6 pb-6">
-            <h3 className="mb-3 flex items-center gap-2 text-sm font-semibold text-gray-700">
-              <ImageIcon size={16} />
-              Brand Images
-            </h3>
+        <div className="mt-5 px-6">
+          <p className="mb-2.5 flex items-center gap-2 text-xs font-semibold uppercase tracking-wide text-gray-500">
+            <ImageIcon size={14} />
+            Logo Preview
+          </p>
 
-            <div className="grid grid-cols-3 gap-3 max-h-[220px] overflow-y-auto">
-              {brand.images.map((img, index) => (
+          <div className="overflow-hidden rounded-2xl border border-emerald-100 bg-gradient-to-br from-emerald-50 to-cyan-50 p-2.5">
+            <img
+              src={logoUrl}
+              alt={brand.name}
+              className="h-44 w-full rounded-xl object-cover"
+            />
+          </div>
+        </div>
+
+        {brand.banners && brand.banners.length > 0 && (
+          <div className="mt-5 px-6">
+            <p className="mb-3 text-xs font-semibold uppercase tracking-wide text-gray-500">
+              Brand Banners
+            </p>
+
+            <div className="grid grid-cols-3 gap-3">
+              {brand.banners.map((banner, index) => (
                 <img
                   key={index}
-                  src={img.url}
-                  alt="brand"
-                  className="h-20 w-full rounded-xl object-cover border"
+                  src={banner.url}
+                  alt={`banner-${index}`}
+                  className="h-20 w-full rounded-xl border object-cover"
                 />
               ))}
             </div>
           </div>
         )}
 
-        {/* FOOTER */}
-        <div className="border-t bg-gray-50 px-6 py-4">
+        <div className="mt-5 border-t border-gray-100 bg-gray-50/70 px-6 py-4">
           <button
             onClick={onClose}
-            className="w-full rounded-xl bg-gray-200 py-3 text-sm font-medium text-slate-600 hover:bg-gray-300"
+            className="w-full rounded-xl bg-gradient-to-r from-emerald-500 via-teal-500 to-cyan-500 py-2.5 text-sm font-semibold text-white shadow-sm transition hover:opacity-90 hover:shadow-md active:scale-[0.98]"
           >
-            Close
+            Done
           </button>
         </div>
       </div>
@@ -138,17 +212,35 @@ export const ViewBrand = ({ brand, onClose }: Props) => {
   );
 };
 
-// ================= INFO CARD =================
 type InfoCardProps = {
+  icon: React.ReactNode;
   label: string;
   value: React.ReactNode;
+  accent: "emerald" | "teal" | "cyan";
 };
 
-const InfoCard = ({ label, value }: InfoCardProps) => {
+const accentMap = {
+  emerald: "bg-emerald-50 border-emerald-100",
+  teal: "bg-teal-50 border-teal-100",
+  cyan: "bg-cyan-50 border-cyan-100",
+};
+
+const InfoCard = ({ icon, label, value, accent }: InfoCardProps) => {
   return (
-    <div className="flex items-center justify-between rounded-2xl border border-gray-100 bg-gray-50 px-4 py-4 hover:bg-gray-100">
-      <span className="text-sm font-medium text-gray-500">{label}</span>
-      <div className="max-w-[60%] text-sm">{value}</div>
+    <div
+      className={`flex items-center justify-between rounded-xl border px-4 py-3 transition hover:brightness-95 ${accentMap[accent]}`}
+    >
+      <div className="flex items-center gap-2.5">
+        <div className="flex h-7 w-7 items-center justify-center rounded-lg bg-white shadow-sm">
+          {icon}
+        </div>
+
+        <span className="text-sm font-medium text-gray-500">{label}</span>
+      </div>
+
+      <div className="max-w-[55%] text-right text-sm font-medium text-gray-800">
+        {value}
+      </div>
     </div>
   );
 };
