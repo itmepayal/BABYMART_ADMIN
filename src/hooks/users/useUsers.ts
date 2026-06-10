@@ -4,6 +4,7 @@ import { useEffect } from "react";
 export const useUsers = () => {
   const {
     users,
+    sellers,
     selectedUser,
     selectedAddress,
     loading,
@@ -14,8 +15,11 @@ export const useUsers = () => {
     limit,
     search,
     isFetchingUsers,
+
     createUser,
     fetchUsers,
+    fetchSellers,
+
     getUserById,
     getSingleAddress,
     updateUser,
@@ -23,6 +27,7 @@ export const useUsers = () => {
     bulkPermanentDeleteUsers,
     bulkDeleteUsers,
     bulkRestoreUsers,
+
     setSearch,
     setLimit,
     clearUsers,
@@ -35,8 +40,11 @@ export const useUsers = () => {
 
   return {
     users,
+    sellers,
+
     selectedUser,
     selectedAddress,
+
     loading,
     error,
     total,
@@ -44,19 +52,26 @@ export const useUsers = () => {
     pages,
     limit,
     search,
-    createUser,
+
     isFetchingUsers,
+
+    createUser,
     refetch: fetchUsers,
+    fetchSellers,
+
     getUserById,
     getSingleAddress,
+
     deleteUser,
+    updateUser,
+
+    bulkPermanentDeleteUsers,
+    bulkDeleteUsers,
+    bulkRestoreUsers,
+
     setSearch,
     setLimit,
     clearUsers,
     changeAvatarUser,
-    updateUser,
-    bulkPermanentDeleteUsers,
-    bulkDeleteUsers,
-    bulkRestoreUsers,
   };
 };

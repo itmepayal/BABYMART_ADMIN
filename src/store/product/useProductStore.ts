@@ -1,70 +1,42 @@
 import { create } from "zustand";
 import { productService } from "@/services/ProductService";
+import type { Product, GetAllProductsParams } from "@/types/product";
 
-// ================= TYPES =================
-type ProductImage = {
-  url: string;
-  public_id: string;
-};
-
-type Product = {
-  _id: string;
-  name: string;
-  description: string;
-  price: number;
-  category: any;
-  brand: any;
-  images: ProductImage[];
-  discountPercentage: number;
-  stock: number;
-  averageRating: number;
-  isDeleted?: boolean;
-  createdAt: string;
-  updatedAt: string;
-};
-
-// ================= QUERY PARAMS =================
-type ProductQuery = {
-  page?: number;
-  limit?: number;
-  search?: string;
-  category?: string;
-  brand?: string;
-  minPrice?: number;
-  maxPrice?: number;
-  minRating?: number;
-  inStock?: boolean;
-};
-
-// ================= STATE =================
+// =========================================
+// STATE
+// =========================================
 type ProductState = {
   products: Product[];
   selectedProduct: Product | null;
-
   loading: boolean;
   isFetchingProducts: boolean;
   error: string | null;
-
   total: number;
   page: number;
   pages: number;
 
-  // ================= ACTIONS =================
-  getAllProducts: (params?: ProductQuery) => Promise<void>;
-  getProductById: (id: string) => Promise<any>;
-  createProduct: (payload: any) => Promise<void>;
-  updateProduct: (id: string, payload: any) => Promise<void>;
+  // =====================================
+  // ACTIONS
+  // =====================================
+  getAllProducts: (params?: GetAllProductsParams) => Promise<void>;
+  getProductById: (id: string) => Promise<Product | null>;
+
+  createProduct: (formData: FormData) => Promise<void>;
+  updateProduct: (id: string, formData: FormData) => Promise<void>;
 
   deleteProduct: (id: string) => Promise<void>;
-
   bulkDeleteProducts: (ids: string[]) => Promise<void>;
   bulkRestoreProducts: (ids: string[]) => Promise<void>;
   bulkPermanentDeleteProducts: (ids: string[]) => Promise<void>;
 
   setProducts: (products: Product[]) => void;
+  clearSelectedProduct: () => void;
+  clearError: () => void;
 };
 
-// ================= STORE =================
+// =========================================
+// STORE
+// =========================================
 export const useProductStore = create<ProductState>((set, get) => ({
   products: [],
   selectedProduct: null,
@@ -77,10 +49,15 @@ export const useProductStore = create<ProductState>((set, get) => ({
   page: 1,
   pages: 1,
 
-  // ================= GET ALL =================
+  // =====================================
+  // GET ALL PRODUCTS
+  // =====================================
   getAllProducts: async (params = {}) => {
     try {
-      set({ loading: true, isFetchingProducts: true });
+      set({
+        isFetchingProducts: true,
+        error: null,
+      });
 
       const res = await productService.getAllProducts(params);
 
@@ -89,144 +66,208 @@ export const useProductStore = create<ProductState>((set, get) => ({
         total: res.total,
         page: res.page,
         pages: res.pages,
-        loading: false,
         isFetchingProducts: false,
       });
-    } catch (err: any) {
+    } catch (error: any) {
       set({
-        loading: false,
         isFetchingProducts: false,
-        error: err?.response?.data?.message || "Failed to fetch products",
+        error: error?.response?.data?.message || "Failed to fetch products",
       });
     }
   },
 
-  // ================= GET BY ID =================
-  getProductById: async (id) => {
+  // =====================================
+  // GET PRODUCT BY ID
+  // =====================================
+  getProductById: async (id: string) => {
     try {
-      set({ loading: true });
+      set({
+        loading: true,
+        error: null,
+      });
 
       const res = await productService.getProductById(id);
+
       set({
         selectedProduct: res.data,
         loading: false,
       });
-      return res;
-    } catch (err: any) {
+
+      return res.data;
+    } catch (error: any) {
       set({
         loading: false,
-        error: err?.response?.data?.message || "Failed to fetch product",
+        error: error?.response?.data?.message || "Failed to fetch product",
       });
+
+      return null;
     }
   },
 
-  // ================= CREATE =================
-  createProduct: async (payload) => {
+  // =====================================
+  // CREATE PRODUCT
+  // =====================================
+  createProduct: async (formData: FormData) => {
     try {
-      set({ loading: true });
+      set({
+        loading: true,
+        error: null,
+      });
 
-      await productService.createProduct(payload);
+      await productService.createProduct(formData);
 
       await get().getAllProducts();
 
-      set({ loading: false });
-    } catch (err: any) {
       set({
         loading: false,
-        error: err?.response?.data?.message || "Create product failed",
       });
-      throw err;
+    } catch (error: any) {
+      set({
+        loading: false,
+        error: error?.response?.data?.message || "Failed to create product",
+      });
+
+      throw error;
     }
   },
 
-  // ================= UPDATE =================
-  updateProduct: async (id, payload) => {
+  // =====================================
+  // UPDATE PRODUCT
+  // =====================================
+  updateProduct: async (id: string, formData: FormData) => {
     try {
-      set({ loading: true });
+      set({
+        loading: true,
+        error: null,
+      });
 
-      await productService.updateProduct(id, payload);
+      await productService.updateProduct(id, formData);
 
       await get().getAllProducts();
 
-      set({ loading: false });
-    } catch (err: any) {
       set({
         loading: false,
-        error: err?.response?.data?.message || "Update product failed",
       });
-      throw err;
+    } catch (error: any) {
+      set({
+        loading: false,
+        error: error?.response?.data?.message || "Failed to update product",
+      });
+
+      throw error;
     }
   },
 
-  // ================= SINGLE DELETE =================
-  deleteProduct: async (id) => {
-    const prev = get().products;
+  // =====================================
+  // DELETE PRODUCT
+  // =====================================
+  deleteProduct: async (id: string) => {
+    const previousProducts = get().products;
 
     set({
-      products: prev.filter((p) => p._id !== id),
+      products: previousProducts.filter((product) => product._id !== id),
     });
 
     try {
       await productService.deleteProduct(id);
       await get().getAllProducts();
-    } catch (err: any) {
+    } catch (error: any) {
       set({
-        products: prev,
-        error: err?.response?.data?.message || "Delete product failed",
+        products: previousProducts,
+        error: error?.response?.data?.message || "Failed to delete product",
       });
+
+      throw error;
     }
   },
 
-  // ================= BULK DELETE =================
-  bulkDeleteProducts: async (ids) => {
-    const prev = get().products;
+  // =====================================
+  // BULK DELETE
+  // =====================================
+  bulkDeleteProducts: async (ids: string[]) => {
+    const previousProducts = get().products;
 
     set({
-      products: prev.filter((p) => !ids.includes(p._id)),
+      products: previousProducts.filter(
+        (product) => !ids.includes(product._id),
+      ),
     });
 
     try {
       await productService.bulkDeleteProducts(ids);
       await get().getAllProducts();
-    } catch (err: any) {
+    } catch (error: any) {
       set({
-        products: prev,
-        error: err?.response?.data?.message || "Bulk delete failed",
+        products: previousProducts,
+        error: error?.response?.data?.message || "Failed to delete products",
       });
+
+      throw error;
     }
   },
 
-  // ================= BULK RESTORE =================
-  bulkRestoreProducts: async (ids) => {
+  // =====================================
+  // BULK RESTORE
+  // =====================================
+  bulkRestoreProducts: async (ids: string[]) => {
     try {
+      set({
+        loading: true,
+        error: null,
+      });
+
       await productService.bulkRestoreProducts(ids);
       await get().getAllProducts();
-    } catch (err: any) {
+
       set({
-        error: err?.response?.data?.message || "Restore failed",
+        loading: false,
       });
+    } catch (error: any) {
+      set({
+        loading: false,
+        error: error?.response?.data?.message || "Failed to restore products",
+      });
+
+      throw error;
     }
   },
 
-  // ================= BULK PERMANENT DELETE =================
-  bulkPermanentDeleteProducts: async (ids) => {
-    const prev = get().products;
+  // =====================================
+  // BULK PERMANENT DELETE
+  // =====================================
+  bulkPermanentDeleteProducts: async (ids: string[]) => {
+    const previousProducts = get().products;
 
     set({
-      products: prev.filter((p) => !ids.includes(p._id)),
+      products: previousProducts.filter(
+        (product) => !ids.includes(product._id),
+      ),
     });
 
     try {
       await productService.bulkPermanentDeleteProducts(ids);
       await get().getAllProducts();
-    } catch (err: any) {
+    } catch (error: any) {
       set({
-        products: prev,
-        error: err?.response?.data?.message || "Permanent delete failed",
+        products: previousProducts,
+        error:
+          error?.response?.data?.message ||
+          "Failed to permanently delete products",
       });
+
+      throw error;
     }
   },
 
-  // ================= SET =================
   setProducts: (products) => set({ products }),
+
+  clearSelectedProduct: () =>
+    set({
+      selectedProduct: null,
+    }),
+
+  clearError: () =>
+    set({
+      error: null,
+    }),
 }));

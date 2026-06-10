@@ -1,9 +1,10 @@
 import { create } from "zustand";
 import { usersServices } from "@/services/UserService";
-import type { GetUsersParams, User } from "@/types/users";
+import type { GetUsersParams, ISeller, User } from "@/types/users";
 
 type UsersState = {
   users: User[];
+  sellers: ISeller[];
   selectedUser: User | null;
 
   loading: boolean;
@@ -18,6 +19,7 @@ type UsersState = {
   search: string;
 
   fetchUsers: (params?: Partial<GetUsersParams>) => Promise<void>;
+  fetchSellers: (params?: Partial<GetUsersParams>) => Promise<void>;
   getUserById: (userId: string) => Promise<void>;
   deleteUser: (userId: string) => Promise<void>;
   updateUser: (userId: string, payload: any) => Promise<void>;
@@ -35,6 +37,7 @@ type UsersState = {
 
 export const useUsersStore = create<UsersState>((set, get) => ({
   users: [],
+  sellers: [],
   selectedUser: null,
   selectedAddress: null,
 
@@ -81,6 +84,40 @@ export const useUsersStore = create<UsersState>((set, get) => ({
     } catch (err: any) {
       set({
         error: err?.response?.data?.message || "Failed to fetch users",
+        loading: false,
+        isFetchingUsers: false,
+      });
+    }
+  },
+
+  // ================= FETCH SELLERS =================
+  fetchSellers: async (params = {}) => {
+    try {
+      const state = get();
+      const isInitialLoad = state.sellers.length === 0;
+
+      set({
+        loading: isInitialLoad,
+        isFetchingUsers: !isInitialLoad,
+        error: null,
+      });
+
+      const query = {
+        page: params.page ?? state.page,
+        limit: params.limit ?? state.limit,
+        search: params.search ?? state.search,
+      };
+
+      const res = await usersServices.getAllSellers(query);
+
+      set({
+        sellers: res.data,
+        loading: false,
+        isFetchingUsers: false,
+      });
+    } catch (err: any) {
+      set({
+        error: err?.response?.data?.message || "Failed to fetch sellers",
         loading: false,
         isFetchingUsers: false,
       });

@@ -3,7 +3,7 @@ import {
   Package,
   IndianRupee,
   Calendar,
-  CheckCircle2,
+  CheckCircle,
   XCircle,
   Tag,
   Boxes,
@@ -13,9 +13,9 @@ import {
   Star,
   Barcode,
   ShoppingCart,
+  Layers,
 } from "lucide-react";
 
-import { motion, AnimatePresence } from "framer-motion";
 import { useState, useEffect } from "react";
 import { defaultAvatar } from "@/assets";
 
@@ -72,94 +72,234 @@ export const ViewProduct = ({ product, onClose }: Props) => {
     ? product.images
     : [{ url: defaultAvatar }];
 
-  const nextImage = () => {
+  const nextImage = () =>
     setSelectedImage((prev) => (prev === images.length - 1 ? 0 : prev + 1));
-  };
 
-  const prevImage = () => {
+  const prevImage = () =>
     setSelectedImage((prev) => (prev === 0 ? images.length - 1 : prev - 1));
-  };
 
-  const stockPercent = Math.min(product.stock, 100);
-
-  const getStockColor = () => {
-    if (product.stock < 10) return "bg-red-500";
-    if (product.stock < 30) return "bg-yellow-500";
-    return "bg-emerald-500";
-  };
+  const isActive = !product.isDeleted;
+  const firstImage = images[selectedImage]?.url || defaultAvatar;
 
   return (
-    <AnimatePresence>
-      <motion.div
-        onClick={onClose}
-        className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 backdrop-blur-md p-4"
-        initial={{ opacity: 0 }}
-        animate={{ opacity: 1 }}
-        exit={{ opacity: 0 }}
+    <div
+      onClick={onClose}
+      className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4 backdrop-blur-sm"
+    >
+      <div
+        onClick={(e) => e.stopPropagation()}
+        className="animate-in fade-in zoom-in-95 relative w-full max-w-md rounded-3xl bg-white shadow-2xl duration-200 flex flex-col max-h-[90vh]"
       >
-        <motion.div
-          onClick={(e) => e.stopPropagation()}
-          initial={{ scale: 0.95, y: 20, opacity: 0 }}
-          animate={{ scale: 1, y: 0, opacity: 1 }}
-          exit={{ scale: 0.95, opacity: 0 }}
-          transition={{ duration: 0.25 }}
-          className="relative w-full max-w-6xl overflow-hidden rounded-3xl bg-white shadow-2xl"
-        >
-          {/* HEADER */}
-          <div className="sticky top-0 z-20 flex items-center justify-between border-b bg-white px-8 py-5">
-            <div>
-              <h2 className="text-xl font-bold text-slate-900">
-                Product Details
-              </h2>
-              <p className="text-sm text-slate-500">
-                Detailed product overview dashboard
-              </p>
-            </div>
+        {/* HEADER BANNER */}
+        <div className="relative h-20 shrink-0 bg-gradient-to-br from-emerald-500 via-teal-500 to-cyan-500">
+          <div className="absolute -bottom-8 -right-8 h-32 w-32 rounded-full bg-white/10" />
+          <div className="absolute -bottom-14 -right-14 h-48 w-48 rounded-full bg-white/5" />
+          <div className="absolute -top-6 -left-6 h-24 w-24 rounded-full bg-white/10" />
 
-            <button
-              type="button"
-              onClick={onClose}
-              className="rounded-xl border p-2 transition hover:bg-slate-100"
-            >
-              <X size={18} />
-            </button>
+          <div className="absolute bottom-8 left-6">
+            <p className="text-xs font-semibold uppercase tracking-widest text-white/70">
+              Product Details
+            </p>
           </div>
 
-          <div className="grid max-h-[85vh] overflow-y-auto lg:grid-cols-2">
-            {/* LEFT SIDE */}
-            <div className="border-r bg-slate-50 p-8">
-              <div className="group relative overflow-hidden rounded-3xl border bg-white shadow-sm">
+          <button
+            onClick={onClose}
+            className="absolute right-4 top-6 flex h-8 w-8 items-center justify-center rounded-full bg-white/20 text-white transition hover:bg-white/30 hover:scale-105"
+          >
+            <X size={16} />
+          </button>
+        </div>
+
+        <div className="overflow-y-auto flex-1">
+          <div className="relative px-6">
+            <div className=" flex items-end gap-4 z-50">
+              <div className="relative shrink-0">
                 <img
-                  src={images[selectedImage]?.url}
+                  src={firstImage}
                   alt={product.name}
-                  className="h-[450px] w-full object-cover transition duration-700 group-hover:scale-110"
+                  className="h-24 w-24 rounded-2xl border-4 border-white object-cover shadow-xl z-50"
                 />
-
-                <button
-                  type="button"
-                  onClick={prevImage}
-                  className="absolute left-4 top-1/2 -translate-y-1/2 rounded-full bg-white p-2 shadow hover:scale-110"
-                >
-                  <ChevronLeft size={18} />
-                </button>
-
-                <button
-                  type="button"
-                  onClick={nextImage}
-                  className="absolute right-4 top-1/2 -translate-y-1/2 rounded-full bg-white p-2 shadow hover:scale-110"
-                >
-                  <ChevronRight size={18} />
-                </button>
+                <span
+                  className={`absolute -bottom-1 -right-1 h-4 w-4 rounded-full border-2 border-white ${
+                    isActive ? "bg-emerald-500" : "bg-red-400"
+                  }`}
+                />
               </div>
 
-              {/* THUMBNAILS */}
-              <div className="mt-4 grid grid-cols-4 gap-3">
+              <div className="min-w-0 pb-2">
+                <h2 className="truncate text-xl font-bold leading-tight text-gray-900">
+                  {product.name}
+                </h2>
+
+                <span
+                  className={`mt-1.5 inline-flex items-center gap-1.5 rounded-full px-3 py-1 text-[11px] font-semibold uppercase tracking-wide ${
+                    isActive
+                      ? "bg-emerald-50 text-emerald-700"
+                      : "bg-red-50 text-red-600"
+                  }`}
+                >
+                  {isActive ? <CheckCircle size={12} /> : <XCircle size={12} />}
+                  {isActive ? "Active" : "Inactive"}
+                </span>
+              </div>
+            </div>
+          </div>
+
+          {/* INFO CARDS GRID */}
+          <div className="mt-5 grid grid-cols-2 gap-2.5 px-6">
+            <InfoCard
+              icon={<IndianRupee size={15} className="text-teal-600" />}
+              label="Price"
+              value={`₹${product.price.toLocaleString("en-IN")}`}
+              accent="teal"
+            />
+
+            <InfoCard
+              icon={<Tag size={15} className="text-cyan-600" />}
+              label="Category"
+              value={product.category?.name}
+              accent="cyan"
+            />
+
+            <InfoCard
+              icon={<Package size={15} className="text-emerald-600" />}
+              label="Brand"
+              value={product.brand?.name}
+              accent="emerald"
+            />
+
+            <InfoCard
+              icon={<Boxes size={15} className="text-teal-600" />}
+              label="Stock"
+              value={
+                <span
+                  className={
+                    product.stock < 10
+                      ? "text-red-500 font-semibold"
+                      : product.stock < 30
+                        ? "text-yellow-600 font-semibold"
+                        : "text-emerald-600 font-semibold"
+                  }
+                >
+                  {product.stock} units
+                </span>
+              }
+              accent="teal"
+            />
+
+            <InfoCard
+              icon={<Star size={15} className="text-emerald-600" />}
+              label="Rating"
+              value={product.averageRating?.toFixed(1) || "No Rating"}
+              accent="emerald"
+            />
+
+            <InfoCard
+              icon={<Layers size={15} className="text-cyan-600" />}
+              label="Images"
+              value={images.length}
+              accent="cyan"
+            />
+
+            <InfoCard
+              icon={<Calendar size={15} className="text-emerald-600" />}
+              label="Created"
+              value={new Date(product.createdAt).toLocaleDateString("en-IN", {
+                day: "numeric",
+                month: "short",
+                year: "numeric",
+              })}
+              accent="emerald"
+            />
+
+            {product.discountPercentage ? (
+              <InfoCard
+                icon={<Tag size={15} className="text-cyan-600" />}
+                label="Discount"
+                value={`${product.discountPercentage}% OFF`}
+                accent="cyan"
+              />
+            ) : null}
+
+            <div className="col-span-2">
+              <InfoCard
+                icon={<Barcode size={15} className="text-teal-600" />}
+                label="SKU"
+                value={
+                  <span className="font-mono text-xs text-gray-500">
+                    {product.sku || "N/A"}
+                  </span>
+                }
+                accent="teal"
+              />
+            </div>
+
+            <div className="col-span-2">
+              <InfoCard
+                icon={<ShoppingCart size={15} className="text-teal-600" />}
+                label="Product ID"
+                value={
+                  <span className="font-mono text-xs text-gray-500 truncate">
+                    {product._id}
+                  </span>
+                }
+                accent="teal"
+              />
+            </div>
+          </div>
+
+          {/* DESCRIPTION */}
+          {product.description && (
+            <div className="mt-5 px-6">
+              <p className="mb-2.5 text-xs font-semibold uppercase tracking-wide text-gray-500">
+                Description
+              </p>
+              <div className="rounded-2xl border border-emerald-100 bg-gradient-to-br from-emerald-50 to-cyan-50 p-4 text-sm leading-6 text-gray-600">
+                {product.description}
+              </div>
+            </div>
+          )}
+
+          {/* IMAGE GALLERY */}
+          <div className="mt-5 px-6">
+            <p className="mb-2.5 flex items-center gap-2 text-xs font-semibold uppercase tracking-wide text-gray-500">
+              <ImageIcon size={14} />
+              Product Images
+            </p>
+
+            {/* Main image with prev/next */}
+            <div className="relative overflow-hidden rounded-2xl border border-emerald-100 bg-gradient-to-br from-emerald-50 to-cyan-50 p-2.5">
+              <img
+                src={firstImage}
+                alt={product.name}
+                className="h-44 w-full rounded-xl object-cover"
+              />
+              {images.length > 1 && (
+                <>
+                  <button
+                    onClick={prevImage}
+                    className="absolute left-4 top-1/2 -translate-y-1/2 flex h-8 w-8 items-center justify-center rounded-full bg-white shadow-md hover:scale-105 transition"
+                  >
+                    <ChevronLeft size={16} />
+                  </button>
+                  <button
+                    onClick={nextImage}
+                    className="absolute right-4 top-1/2 -translate-y-1/2 flex h-8 w-8 items-center justify-center rounded-full bg-white shadow-md hover:scale-105 transition"
+                  >
+                    <ChevronRight size={16} />
+                  </button>
+                </>
+              )}
+            </div>
+
+            {/* Thumbnails */}
+            {images.length > 1 && (
+              <div className="mt-3 grid grid-cols-4 gap-2">
                 {images.map((img, index) => (
                   <button
-                    type="button"
                     key={index}
                     onClick={() => setSelectedImage(index)}
-                    className={`overflow-hidden rounded-2xl border-2 transition ${
+                    className={`overflow-hidden rounded-xl border-2 transition ${
                       selectedImage === index
                         ? "border-emerald-500 ring-2 ring-emerald-200"
                         : "border-transparent hover:border-slate-300"
@@ -168,178 +308,52 @@ export const ViewProduct = ({ product, onClose }: Props) => {
                     <img
                       src={img.url}
                       alt={`Product image ${index + 1}`}
-                      className="h-20 w-full object-cover"
+                      className="h-16 w-full object-cover"
                     />
                   </button>
                 ))}
               </div>
-            </div>
-
-            {/* RIGHT SIDE */}
-            <div className="p-8">
-              <div className="flex flex-col gap-5">
-                <div className="flex items-start justify-between gap-5">
-                  <div>
-                    <h1 className="text-2xl font-bold text-slate-900">
-                      {product.name}
-                    </h1>
-
-                    <p className="mt-2 flex items-center gap-2 text-sm text-slate-500">
-                      <Barcode size={15} />
-                      SKU: {product.sku || "N/A"}
-                    </p>
-                  </div>
-
-                  <div className="rounded-2xl bg-gradient-to-r from-emerald-500 to-cyan-500 px-6 py-4 text-white shadow-lg">
-                    <div className="flex items-center gap-1 text-xl font-bold">
-                      <IndianRupee size={20} />
-                      {product.price}
-                    </div>
-                  </div>
-                </div>
-
-                {/* BADGES */}
-                <div className="flex flex-wrap gap-3">
-                  <Badge
-                    text={!product.isDeleted ? "Active" : "Inactive"}
-                    icon={
-                      !product.isDeleted ? (
-                        <CheckCircle2 size={14} />
-                      ) : (
-                        <XCircle size={14} />
-                      )
-                    }
-                    color={
-                      !product.isDeleted
-                        ? "bg-emerald-100 text-emerald-700"
-                        : "bg-red-100 text-red-700"
-                    }
-                  />
-
-                  <Badge
-                    text={`Stock: ${product.stock}`}
-                    icon={<Boxes size={14} />}
-                    color="bg-blue-100 text-blue-700"
-                  />
-
-                  {product.discountPercentage ? (
-                    <Badge
-                      text={`${product.discountPercentage}% OFF`}
-                      icon={<Tag size={14} />}
-                      color="bg-orange-100 text-orange-700"
-                    />
-                  ) : null}
-                </div>
-
-                {/* DESCRIPTION */}
-                {product.description && (
-                  <section className="rounded-2xl border bg-slate-50 p-5">
-                    <h3 className="font-semibold text-slate-900">
-                      Description
-                    </h3>
-                    <p className="mt-2 text-sm leading-6 text-slate-600">
-                      {product.description}
-                    </p>
-                  </section>
-                )}
-
-                {/* STOCK BAR */}
-                <section>
-                  <div className="mb-2 flex justify-between text-sm">
-                    <span className="font-medium text-slate-700">
-                      Inventory Level
-                    </span>
-                    <span>{product.stock}/100</span>
-                  </div>
-
-                  <div className="h-3 overflow-hidden rounded-full bg-slate-200">
-                    <div
-                      style={{ width: `${stockPercent}%` }}
-                      className={`h-full ${getStockColor()} transition-all`}
-                    />
-                  </div>
-                </section>
-
-                {/* INFO GRID */}
-                <div className="grid gap-4 sm:grid-cols-2">
-                  <InfoCard
-                    icon={<Tag size={18} />}
-                    label="Category"
-                    value={product.category?.name}
-                  />
-
-                  <InfoCard
-                    icon={<Package size={18} />}
-                    label="Brand"
-                    value={product.brand?.name}
-                  />
-
-                  <InfoCard
-                    icon={<ImageIcon size={18} />}
-                    label="Images"
-                    value={images.length}
-                  />
-
-                  <InfoCard
-                    icon={<Calendar size={18} />}
-                    label="Created"
-                    value={new Date(product.createdAt).toLocaleDateString()}
-                  />
-
-                  <InfoCard
-                    icon={<Star size={18} />}
-                    label="Rating"
-                    value={product.averageRating?.toFixed(1) || "No Rating"}
-                  />
-
-                  <InfoCard
-                    icon={<ShoppingCart size={18} />}
-                    label="Product ID"
-                    value={product._id.slice(0, 10)}
-                  />
-                </div>
-              </div>
-            </div>
+            )}
           </div>
-        </motion.div>
-      </motion.div>
-    </AnimatePresence>
+        </div>
+        <div className="shrink-0 border-t border-gray-100 bg-gray-50/70 px-6 py-4">
+          <button
+            onClick={onClose}
+            className="w-full rounded-xl bg-gradient-to-r from-emerald-500 via-teal-500 to-cyan-500 py-2.5 text-sm font-semibold text-white shadow-sm transition hover:opacity-90 hover:shadow-md active:scale-[0.98]"
+          >
+            Done
+          </button>
+        </div>
+      </div>
+    </div>
   );
 };
 
-/* COMPONENTS */
-
-const InfoCard = ({
-  icon,
-  label,
-  value,
-}: {
+type InfoCardProps = {
   icon: React.ReactNode;
   label: string;
-  value?: React.ReactNode;
-}) => (
-  <div className="rounded-2xl border bg-white p-4 shadow-sm transition hover:shadow-md">
-    <div className="mb-2 flex items-center gap-2 text-slate-500">
-      <div className="rounded-lg bg-slate-100 p-2">{icon}</div>
-      <span className="text-xs font-medium">{label}</span>
-    </div>
-    <p className="text-sm font-semibold text-slate-900">{value || "N/A"}</p>
-  </div>
-);
+  value: React.ReactNode;
+  accent: "emerald" | "teal" | "cyan";
+};
 
-const Badge = ({
-  icon,
-  text,
-  color,
-}: {
-  icon: React.ReactNode;
-  text: string;
-  color: string;
-}) => (
-  <span
-    className={`inline-flex items-center gap-2 rounded-full px-4 py-2 text-xs font-semibold ${color}`}
+const accentMap = {
+  emerald: "bg-emerald-50 border-emerald-100",
+  teal: "bg-teal-50 border-teal-100",
+  cyan: "bg-cyan-50 border-cyan-100",
+};
+
+const InfoCard = ({ icon, label, value, accent }: InfoCardProps) => (
+  <div
+    className={`flex flex-col gap-2 rounded-xl border px-4 py-3 transition hover:brightness-95 ${accentMap[accent]}`}
   >
-    {icon}
-    {text}
-  </span>
+    <div className="flex items-center gap-2">
+      <div className="flex h-6 w-6 items-center justify-center rounded-lg bg-white shadow-sm">
+        {icon}
+      </div>
+      <span className="text-xs font-medium text-gray-500">{label}</span>
+    </div>
+    <div className="text-sm font-semibold text-gray-800 truncate">
+      {value ?? "N/A"}
+    </div>
+  </div>
 );

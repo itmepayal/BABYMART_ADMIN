@@ -59,3 +59,16 @@ export interface GetAllUsersResponse {
     limit: number;
   };
 }
+
+export interface ISeller {
+  _id: string;
+  firstname: string;
+  lastname: string;
+  email: string;
+}
+
+export interface GetSellersResponse {
+  success: boolean;
+  message: string;
+  data: ISeller[];
+}

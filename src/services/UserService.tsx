@@ -1,5 +1,9 @@
 import { api } from "@/lib/config";
-import type { GetAllUsersResponse, GetUsersParams } from "@/types/users";
+import type {
+  GetAllUsersResponse,
+  GetSellersResponse,
+  GetUsersParams,
+} from "@/types/users";
 
 export const usersServices = {
   // ================= USERS LIST =================
@@ -10,6 +14,23 @@ export const usersServices = {
 
     const { data } = await api.get("/users", {
       params: { page, limit, search },
+    });
+
+    return data;
+  },
+
+  // ================= SELLERS =================
+  getAllSellers: async (
+    params: GetUsersParams = {},
+  ): Promise<GetSellersResponse> => {
+    const { page = 1, limit = 10, search = "" } = params;
+
+    const { data } = await api.get("/users/sellers", {
+      params: {
+        page,
+        limit,
+        search,
+      },
     });
 
     return data;
