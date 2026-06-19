@@ -1,6 +1,6 @@
 import { create } from "zustand";
 import { productService } from "@/services/ProductService";
-import type { Product, GetAllProductsParams } from "@/types/product";
+import type { Product, GetAllProductsParams } from "@/types/product.type";
 
 // =========================================
 // STATE

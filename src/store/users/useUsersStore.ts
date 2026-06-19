@@ -1,6 +1,6 @@
 import { create } from "zustand";
 import { usersServices } from "@/services/UserService";
-import type { GetUsersParams, ISeller, User } from "@/types/users";
+import type { GetUsersParams, ISeller, User } from "@/types/user.type";
 
 type UsersState = {
   users: User[];

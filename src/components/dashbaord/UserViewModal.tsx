@@ -8,7 +8,7 @@ import {
   XCircle,
   MapPin,
 } from "lucide-react";
-import type { User as UserType } from "@/types/users";
+import type { User as UserType } from "@/types/user.type";
 import { defaultAvatar } from "@/assets";
 
 type Props = {

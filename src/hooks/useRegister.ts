@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { useAuthStore } from "../store/auth/useAuthStore";
-import type { RegisterCredentials } from "@/types/auth";
+import type { RegisterCredentials } from "@/types/auth.type";
 
 export const useRegister = () => {
   const register = useAuthStore((state) => state.register);

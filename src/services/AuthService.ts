@@ -1,6 +1,6 @@
-import type { AuthResponse, RegisterCredentials } from "@/types/auth";
 import { api } from "@/lib/config";
 import type { LoginCredentials } from "@/schemas/auth.schema";
+import type { AuthResponse, RegisterCredentials } from "@/types/auth.type";
 
 export const authService = {
   login: async (credentials: LoginCredentials): Promise<AuthResponse> => {

@@ -30,9 +30,6 @@ import { useCategories } from "@/hooks/categories/useCategories";
 import { useUpdateCategory } from "@/hooks/categories/useCategoryActions";
 import { api } from "@/lib/config";
 
-// =========================================
-// TYPES
-// =========================================
 type CategoryType =
   | "baby-care"
   | "diapers"
@@ -67,9 +64,6 @@ interface ICategory {
   isActive: boolean;
 }
 
-// =========================================
-// CONSTANTS
-// =========================================
 const CATEGORY_TYPES: { value: CategoryType; label: string; emoji: string }[] =
   [
     { value: "baby-care", label: "Baby Care", emoji: "🍼" },
@@ -89,9 +83,6 @@ const CATEGORY_TYPES: { value: CategoryType; label: string; emoji: string }[] =
 const cardStyle =
   "rounded-3xl border border-slate-200 bg-white p-7 shadow-sm hover:shadow-lg transition-all duration-300";
 
-// =========================================
-// SECTION HEADER COMPONENT
-// =========================================
 const SectionHeader = ({
   icon: Icon,
   title,
@@ -112,9 +103,6 @@ const SectionHeader = ({
   </div>
 );
 
-// =========================================
-// CATEGORY TYPE SELECT COMPONENT
-// =========================================
 const CategoryTypeSelect = ({
   value,
   onChange,
@@ -218,9 +206,6 @@ const CategoryTypeSelect = ({
   );
 };
 
-// =========================================
-// PARENT CATEGORY SELECT COMPONENT
-// =========================================
 const ParentCategorySelect = ({
   value,
   onChange,
@@ -389,9 +374,6 @@ const ParentCategorySelect = ({
   );
 };
 
-// =========================================
-// CHAR COUNTER COMPONENT
-// =========================================
 const CharCount = ({ current, max }: { current: number; max: number }) => (
   <span
     className={`text-xs ${current > max * 0.9 ? "text-amber-500" : "text-slate-400"}`}
@@ -400,9 +382,6 @@ const CharCount = ({ current, max }: { current: number; max: number }) => (
   </span>
 );
 
-// =========================================
-// MAIN COMPONENT
-// =========================================
 const EditCategory = () => {
   const navigate = useNavigate();
   const { id } = useParams();
@@ -435,9 +414,6 @@ const EditCategory = () => {
     },
   });
 
-  // =========================================
-  // FETCH ALL CATEGORIES
-  // =========================================
   useEffect(() => {
     const fetchCategories = async () => {
       setCategoriesLoading(true);
@@ -453,16 +429,10 @@ const EditCategory = () => {
     fetchCategories();
   }, []);
 
-  // =========================================
-  // FETCH CURRENT CATEGORY
-  // =========================================
   useEffect(() => {
     if (id) getCategoryById(id);
   }, [id]);
 
-  // =========================================
-  // PREFILL FORM
-  // =========================================
   useEffect(() => {
     if (selectedCategory) {
       reset({
@@ -490,9 +460,6 @@ const EditCategory = () => {
   const watchedCategoryType = watch("categoryType");
   const watchedParentCategory = watch("parentCategory");
 
-  // =========================================
-  // IMAGE UPLOAD
-  // =========================================
   const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const selected = e.target.files?.[0];
     if (!selected) return;
@@ -511,9 +478,6 @@ const EditCategory = () => {
     setValue("image", "");
   };
 
-  // =========================================
-  // AUTO-FILL SEO
-  // =========================================
   const autoFillSeo = () => {
     if (watchedName && !watchedSeoTitle) {
       setValue("seoTitle", `${watchedName} | Baby Store`);
@@ -523,9 +487,6 @@ const EditCategory = () => {
     }
   };
 
-  // =========================================
-  // SUBMIT
-  // =========================================
   const onSubmit = async (data: FormValues) => {
     if (!id) return;
 
@@ -563,9 +524,6 @@ const EditCategory = () => {
     }
   };
 
-  // =========================================
-  // SLUG PREVIEW
-  // =========================================
   const slugPreview = watchedName
     ? watchedName
         .toLowerCase()
@@ -593,7 +551,6 @@ const EditCategory = () => {
       <div className="mx-auto py-8">
         <form onSubmit={handleSubmit(onSubmit)}>
           <div className="grid gap-8 xl:grid-cols-12">
-            {/* ================= LEFT SECTION ================= */}
             <div className="space-y-8 xl:col-span-8">
               <motion.div
                 initial={{ opacity: 0, y: 15 }}
@@ -701,7 +658,6 @@ const EditCategory = () => {
                 </div>
               </motion.div>
 
-              {/* ---- IMAGE ---- */}
               <motion.div
                 initial={{ opacity: 0, y: 15 }}
                 animate={{ opacity: 1, y: 0 }}
@@ -932,7 +888,6 @@ const EditCategory = () => {
               </motion.div>
             </div>
 
-            {/* ================= RIGHT SIDEBAR ================= */}
             <div className="xl:col-span-4">
               <div className="sticky top-6">
                 <div className="overflow-hidden rounded-3xl border border-slate-200 bg-white shadow-xl shadow-slate-100">

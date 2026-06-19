@@ -28,9 +28,6 @@ import { toast } from "sonner";
 import { useCreateCategory } from "@/hooks/categories/useCategoryActions";
 import { api } from "@/lib/config";
 
-// =========================================
-// TYPES
-// =========================================
 type CategoryType =
   | "baby-care"
   | "diapers"
@@ -65,9 +62,6 @@ interface ICategory {
   isActive: boolean;
 }
 
-// =========================================
-// CONSTANTS
-// =========================================
 const CATEGORY_TYPES: { value: CategoryType; label: string; emoji: string }[] =
   [
     { value: "baby-care", label: "Baby Care", emoji: "🍼" },
@@ -87,9 +81,6 @@ const CATEGORY_TYPES: { value: CategoryType; label: string; emoji: string }[] =
 const cardStyle =
   "rounded-3xl border border-slate-200 bg-white p-7 shadow-sm hover:shadow-lg transition-all duration-300";
 
-// =========================================
-// SECTION HEADER COMPONENT
-// =========================================
 const SectionHeader = ({
   icon: Icon,
   title,
@@ -110,9 +101,6 @@ const SectionHeader = ({
   </div>
 );
 
-// =========================================
-// CATEGORY TYPE SELECT COMPONENT
-// =========================================
 const CategoryTypeSelect = ({
   value,
   onChange,
@@ -216,9 +204,6 @@ const CategoryTypeSelect = ({
   );
 };
 
-// =========================================
-// PARENT CATEGORY SELECT COMPONENT
-// =========================================
 const ParentCategorySelect = ({
   value,
   onChange,
@@ -384,9 +369,6 @@ const ParentCategorySelect = ({
   );
 };
 
-// =========================================
-// CHAR COUNTER COMPONENT
-// =========================================
 const CharCount = ({ current, max }: { current: number; max: number }) => (
   <span
     className={`text-xs ${current > max * 0.9 ? "text-amber-500" : "text-slate-400"}`}
@@ -395,9 +377,6 @@ const CharCount = ({ current, max }: { current: number; max: number }) => (
   </span>
 );
 
-// =========================================
-// MAIN COMPONENT
-// =========================================
 const CreateCategory = () => {
   const navigate = useNavigate();
   const [file, setFile] = useState<File | null>(null);
@@ -451,9 +430,6 @@ const CreateCategory = () => {
   const watchedCategoryType = watch("categoryType");
   const watchedParentCategory = watch("parentCategory");
 
-  // =========================================
-  // IMAGE UPLOAD
-  // =========================================
   const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const selected = e.target.files?.[0];
     if (!selected) return;
@@ -472,9 +448,6 @@ const CreateCategory = () => {
     setValue("image", "");
   };
 
-  // =========================================
-  // AUTO-FILL SEO
-  // =========================================
   const autoFillSeo = () => {
     if (watchedName && !watchedSeoTitle) {
       setValue("seoTitle", `${watchedName} | Baby Store`);
@@ -484,9 +457,6 @@ const CreateCategory = () => {
     }
   };
 
-  // =========================================
-  // SUBMIT
-  // =========================================
   const onSubmit = async (data: FormValues) => {
     if (!file) {
       toast.error("Please upload a category image");
@@ -522,9 +492,6 @@ const CreateCategory = () => {
     }
   };
 
-  // =========================================
-  // SLUG PREVIEW
-  // =========================================
   const slugPreview = watchedName
     ? watchedName
         .toLowerCase()
@@ -552,7 +519,6 @@ const CreateCategory = () => {
       <div className="mx-auto py-8">
         <form onSubmit={handleSubmit(onSubmit)}>
           <div className="grid gap-8 xl:grid-cols-12">
-            {/* ================= LEFT SECTION ================= */}
             <div className="space-y-8 xl:col-span-8">
               <motion.div
                 initial={{ opacity: 0, y: 15 }}
@@ -889,7 +855,6 @@ const CreateCategory = () => {
               </motion.div>
             </div>
 
-            {/* ================= RIGHT SIDEBAR ================= */}
             <div className="xl:col-span-4">
               <div className="sticky top-6">
                 <div className="overflow-hidden rounded-3xl border border-slate-200 bg-white shadow-xl shadow-slate-100">

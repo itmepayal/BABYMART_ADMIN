@@ -1,22 +1,19 @@
 import {
   X,
-  Image as ImageIcon,
-  CheckCircle,
-  XCircle,
-  Calendar,
+  CheckCircle2,
   Tag,
-  Layers,
-  Percent,
-  Link,
   Star,
-  Globe,
-  LayoutTemplate,
   Smartphone,
+  Monitor,
+  ExternalLink,
+  Calendar,
+  Hash,
+  Percent,
+  ArrowUpRight,
+  Text,
 } from "lucide-react";
 
 import { defaultAvatar } from "@/assets";
-
-// ─── Types ────────────────────────────────────────────────────────────────────
 
 type ImageType = {
   url: string;
@@ -45,7 +42,6 @@ type BannerType = {
   seoDescription?: string;
   desktopImage?: ImageType;
   mobileImage?: ImageType;
-  // legacy shape
   image?: ImageType;
   createdAt: string;
   updatedAt?: string;
@@ -54,17 +50,6 @@ type BannerType = {
 type Props = {
   banner: BannerType | null;
   onClose: () => void;
-};
-
-// ─── Helpers ──────────────────────────────────────────────────────────────────
-
-const BANNER_TYPE_EMOJI: Record<string, string> = {
-  home: "🏠",
-  offer: "🎁",
-  category: "📂",
-  product: "📦",
-  "flash-sale": "⚡",
-  seasonal: "🌸",
 };
 
 const fmt = (dateStr?: string) => {
@@ -78,38 +63,29 @@ const fmt = (dateStr?: string) => {
   });
 };
 
-// ─── InfoCard ─────────────────────────────────────────────────────────────────
-
-type InfoCardProps = {
-  icon: React.ReactNode;
+type RowProps = {
   label: string;
   value: React.ReactNode;
-  accent: "emerald" | "teal" | "cyan";
+  icon?: React.ReactNode;
 };
 
-const accentMap = {
-  emerald: "bg-emerald-50 border-emerald-100",
-  teal: "bg-teal-50 border-teal-100",
-  cyan: "bg-cyan-50 border-cyan-100",
-};
-
-const InfoCard = ({ icon, label, value, accent }: InfoCardProps) => (
-  <div
-    className={`flex items-center justify-between rounded-xl border px-4 py-3 transition hover:brightness-95 ${accentMap[accent]}`}
-  >
-    <div className="flex items-center gap-2.5">
-      <div className="flex h-7 w-7 items-center justify-center rounded-lg bg-white shadow-sm">
-        {icon}
-      </div>
-      <span className="text-sm font-medium text-gray-500">{label}</span>
-    </div>
-    <div className="max-w-[55%] text-right text-sm font-medium text-gray-800">
+const Row = ({ label, value, icon }: RowProps) => (
+  <tr className="group border-t border-gray-100">
+    <td className="py-3 text-[13px] text-gray-400 font-medium">
+      <span className="flex items-center gap-2">
+        {icon && (
+          <span className="text-gray-300 group-hover:text-gray-400 transition-colors">
+            {icon}
+          </span>
+        )}
+        {label}
+      </span>
+    </td>
+    <td className="py-3 text-right text-[13px] font-medium text-gray-800">
       {value}
-    </div>
-  </div>
+    </td>
+  </tr>
 );
-
-// ─── Main Component ───────────────────────────────────────────────────────────
 
 export const ViewBanner = ({ banner, onClose }: Props) => {
   if (!banner) return null;
@@ -117,266 +93,247 @@ export const ViewBanner = ({ banner, onClose }: Props) => {
   const desktopUrl =
     banner.desktopImage?.url || banner.image?.url || defaultAvatar;
   const mobileUrl = banner.mobileImage?.url;
-  const emoji = BANNER_TYPE_EMOJI[banner.bannerType] || "🏷️";
 
   return (
     <div
       onClick={onClose}
-      className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4 backdrop-blur-sm"
+      className="fixed inset-0 z-50 flex justify-end bg-black/50 backdrop-blur-[3px]"
     >
       <div
         onClick={(e) => e.stopPropagation()}
-        className="animate-in fade-in zoom-in-95 relative w-full max-w-md overflow-hidden rounded-3xl bg-white shadow-2xl duration-200 max-h-[90vh] overflow-y-auto"
+        className="animate-in slide-in-from-right relative flex h-full w-full max-w-xl overflow-hidden bg-white shadow-2xl duration-300"
       >
-        {/* ─── GRADIENT HEADER ─── */}
-        <div className="relative h-36 bg-gradient-to-br from-emerald-500 via-teal-500 to-cyan-500 flex-shrink-0">
-          <div className="absolute -bottom-8 -right-8 h-32 w-32 rounded-full bg-white/10" />
-          <div className="absolute -bottom-14 -right-14 h-48 w-48 rounded-full bg-white/5" />
-          <div className="absolute -top-6 -left-6 h-24 w-24 rounded-full bg-white/10" />
+        <div
+          className={`w-1 flex-shrink-0 ${
+            banner.isActive
+              ? "bg-gradient-to-b from-emerald-400 to-emerald-600"
+              : "bg-gradient-to-b from-red-300 to-red-500"
+          }`}
+        />
 
-          <div className="absolute -mt-12 bottom-14 left-6">
-            <p className="text-xs -mt-18 font-semibold uppercase tracking-widest text-white/70">
-              Banner Details
-            </p>
-          </div>
-
-          <button
-            onClick={onClose}
-            className="absolute right-4 top-4 flex h-8 w-8 items-center justify-center rounded-full bg-white/20 text-white transition hover:bg-white/30 hover:scale-105"
-          >
-            <X size={16} />
-          </button>
-        </div>
-
-        {/* ─── AVATAR + NAME ─── */}
-        <div className="relative px-6">
-          <div className="-mt-26 flex items-end gap-4">
-            <div className="relative shrink-0">
-              <img
-                src={desktopUrl}
-                alt={banner.name}
-                className="h-24 w-24 rounded-2xl border-4 border-white object-cover shadow-xl"
-              />
-              <span
-                className={`absolute -bottom-1 -right-1 h-4 w-4 rounded-full border-2 border-white ${
+        <div className="flex-1 overflow-y-auto">
+          <div className="sticky top-0 z-10 flex items-center justify-between border-b border-gray-100 bg-white/98 px-6 py-4 backdrop-blur-sm">
+            <div className="min-w-0 flex items-center gap-3">
+              <div
+                className={`h-2 w-2 rounded-full flex-shrink-0 ${
                   banner.isActive ? "bg-emerald-500" : "bg-red-400"
                 }`}
               />
+              <div className="min-w-0">
+                <p className="text-[11px] font-semibold uppercase tracking-widest text-gray-400">
+                  Banner Details
+                </p>
+                <h2 className="mt-0.5 truncate text-[15px] font-semibold text-gray-900">
+                  {banner.name}
+                </h2>
+              </div>
+            </div>
+            <button
+              onClick={onClose}
+              aria-label="Close"
+              className="ml-4 flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-lg border border-gray-200 text-gray-400 transition-all hover:bg-gray-50 hover:text-gray-600 hover:border-gray-300"
+            >
+              <X size={15} />
+            </button>
+          </div>
+
+          <div className="px-6 pt-5">
+            <div className="flex gap-3">
+              <div className="relative flex-1 overflow-hidden rounded-xl border border-gray-100">
+                <img
+                  src={desktopUrl}
+                  alt={banner.name}
+                  className="h-44 w-full object-cover"
+                />
+                <span className="absolute left-3 top-3 flex items-center gap-1.5 rounded-lg bg-white/95 px-2.5 py-1.5 text-[11px] font-semibold text-gray-600 shadow-sm">
+                  <Monitor size={12} />
+                  Desktop
+                </span>
+              </div>
+
+              {mobileUrl && (
+                <div className="relative w-[90px] overflow-hidden rounded-xl border border-gray-100">
+                  <img
+                    src={mobileUrl}
+                    alt={`${banner.name} mobile`}
+                    className="h-44 w-full object-cover"
+                  />
+                  <span className="absolute left-2 top-2 flex items-center gap-1 rounded-md bg-white/95 px-1.5 py-1 text-[10px] font-semibold text-gray-600 shadow-sm">
+                    <Smartphone size={11} />
+                  </span>
+                </div>
+              )}
             </div>
 
-            <div className="min-w-0 pb-2">
-              <h2 className="truncate text-xl font-bold leading-tight text-white">
-                {banner.name}
-              </h2>
+            <div className="mt-5">
+              <h3 className="text-[15px] font-semibold text-gray-900 leading-snug">
+                {banner.title}
+              </h3>
+              {banner.subtitle && (
+                <p className="mt-1 text-[13px] text-gray-500">
+                  {banner.subtitle}
+                </p>
+              )}
+            </div>
 
+            <div className="mt-3 flex flex-wrap gap-2">
               <span
-                className={`mt-1.5 inline-flex items-center gap-1.5 rounded-full px-3 py-1 text-[11px] font-semibold uppercase tracking-wide ${
+                className={`flex items-center gap-1.5 rounded-lg px-3 py-1.5 text-[12px] font-semibold ${
                   banner.isActive
-                    ? "bg-emerald-50 text-emerald-700"
-                    : "bg-red-50 text-red-600"
+                    ? "bg-emerald-50 text-emerald-700 ring-1 ring-emerald-200"
+                    : "bg-red-50 text-red-600 ring-1 ring-red-200"
                 }`}
               >
-                {banner.isActive ? (
-                  <CheckCircle size={12} />
-                ) : (
-                  <XCircle size={12} />
-                )}
+                <CheckCircle2 size={13} />
                 {banner.isActive ? "Active" : "Inactive"}
               </span>
-            </div>
-          </div>
-        </div>
 
-        {/* ─── INFO CARDS ─── */}
-        <div className="mt-5 space-y-2.5 px-6">
-          <InfoCard
-            icon={<LayoutTemplate size={15} className="text-teal-600" />}
-            label="Title"
-            value={banner.title}
-            accent="teal"
-          />
-
-          <InfoCard
-            icon={<Tag size={15} className="text-emerald-600" />}
-            label="Banner Type"
-            value={
-              <span className="capitalize">
-                {emoji} {banner.bannerType}
+              <span className="flex items-center gap-1.5 rounded-lg bg-gray-100 px-3 py-1.5 text-[12px] font-semibold capitalize text-gray-600">
+                <Tag size={13} />
+                {banner.bannerType}
               </span>
-            }
-            accent="emerald"
-          />
 
-          {banner.isFeatured && (
-            <InfoCard
-              icon={<Star size={15} className="text-violet-600" />}
-              label="Featured"
-              value={
-                <span className="rounded-full bg-violet-50 px-2 py-0.5 text-xs font-semibold text-violet-600">
-                  Yes
+              {banner.isFeatured && (
+                <span className="flex items-center gap-1.5 rounded-lg bg-amber-50 px-3 py-1.5 text-[12px] font-semibold text-amber-700 ring-1 ring-amber-200">
+                  <Star size={13} />
+                  Featured
                 </span>
-              }
-              accent="teal"
-            />
-          )}
+              )}
+            </div>
+            <div className="mt-5 border-t border-gray-100" />
+            <table className="mt-1 w-full">
+              <tbody>
+                {banner.discountPercentage != null && (
+                  <Row
+                    icon={<Percent size={13} />}
+                    label="Discount"
+                    value={
+                      <span className="inline-flex items-center gap-1 rounded-md bg-emerald-50 px-2 py-0.5 text-emerald-700">
+                        {banner.discountPercentage}% off
+                      </span>
+                    }
+                  />
+                )}
 
-          {banner.discountPercentage !== undefined &&
-            banner.discountPercentage !== null && (
-              <InfoCard
-                icon={<Percent size={15} className="text-red-500" />}
-                label="Discount"
-                value={`${banner.discountPercentage}%`}
-                accent="cyan"
-              />
+                {banner.priority != null && (
+                  <Row
+                    icon={<Hash size={13} />}
+                    label="Priority"
+                    value={
+                      <span className="inline-flex items-center gap-1 rounded-md bg-gray-50 px-2 py-0.5 text-gray-700">
+                        {banner.priority}
+                      </span>
+                    }
+                  />
+                )}
+
+                {banner.startFrom && (
+                  <Row
+                    icon={<Calendar size={13} />}
+                    label="Starting from"
+                    value={banner.startFrom}
+                  />
+                )}
+
+                {(banner.startDate || banner.endDate) && (
+                  <Row
+                    icon={<Calendar size={13} />}
+                    label="Duration"
+                    value={
+                      <span className="flex items-center justify-end gap-1.5">
+                        <span>{fmt(banner.startDate)}</span>
+                        {banner.startDate && banner.endDate && (
+                          <span className="text-gray-300">→</span>
+                        )}
+                        <span>{banner.endDate ? fmt(banner.endDate) : ""}</span>
+                      </span>
+                    }
+                  />
+                )}
+
+                {banner.buttonText && (
+                  <Row
+                    icon={<Text size={13} />}
+                    label="Button text"
+                    value={
+                      <span className="inline-flex items-center gap-1 rounded-md bg-gray-50 px-2 py-0.5 font-mono text-[12px] text-gray-700">
+                        {banner.buttonText}
+                      </span>
+                    }
+                  />
+                )}
+
+                {banner.redirectUrl && (
+                  <Row
+                    icon={<ArrowUpRight size={13} />}
+                    label="Redirect"
+                    value={
+                      <a
+                        href={banner.redirectUrl}
+                        target="_blank"
+                        rel="noreferrer"
+                        className="inline-flex items-center gap-1 rounded-md bg-cyan-50 px-2 py-0.5 text-cyan-700 hover:bg-cyan-100 transition-colors"
+                      >
+                        View link
+                        <ExternalLink size={11} />
+                      </a>
+                    }
+                  />
+                )}
+
+                {banner.seoTitle && (
+                  <Row
+                    icon={<Text size={13} />}
+                    label="SEO title"
+                    value={
+                      <span className="line-clamp-1 text-gray-600">
+                        {banner.seoTitle}
+                      </span>
+                    }
+                  />
+                )}
+                <Row
+                  icon={<Calendar size={13} />}
+                  label="Created"
+                  value={fmt(banner.createdAt)}
+                />
+                {banner.updatedAt && (
+                  <Row
+                    icon={<Calendar size={13} />}
+                    label="Updated"
+                    value={fmt(banner.updatedAt)}
+                  />
+                )}
+              </tbody>
+            </table>
+            {banner.description && (
+              <div className="mt-5 rounded-xl bg-gray-50 p-4">
+                <p className="text-[11px] font-semibold uppercase tracking-widest text-gray-400">
+                  Description
+                </p>
+                <p className="mt-2 text-[13px] leading-relaxed text-gray-600">
+                  {banner.description}
+                </p>
+              </div>
             )}
-
-          {banner.startFrom && (
-            <InfoCard
-              icon={<Tag size={15} className="text-emerald-600" />}
-              label="Starting From"
-              value={banner.startFrom}
-              accent="emerald"
-            />
-          )}
-
-          {banner.startDate && (
-            <InfoCard
-              icon={<Calendar size={15} className="text-teal-600" />}
-              label="Start Date"
-              value={fmt(banner.startDate)}
-              accent="teal"
-            />
-          )}
-
-          {banner.endDate && (
-            <InfoCard
-              icon={<Calendar size={15} className="text-cyan-600" />}
-              label="End Date"
-              value={fmt(banner.endDate)}
-              accent="cyan"
-            />
-          )}
-
-          {banner.priority !== undefined && banner.priority !== null && (
-            <InfoCard
-              icon={<Layers size={15} className="text-cyan-600" />}
-              label="Priority"
-              value={banner.priority}
-              accent="cyan"
-            />
-          )}
-
-          {banner.redirectUrl && (
-            <InfoCard
-              icon={<Link size={15} className="text-emerald-600" />}
-              label="Redirect URL"
-              value={
-                <a
-                  href={banner.redirectUrl}
-                  target="_blank"
-                  rel="noreferrer"
-                  className="truncate text-cyan-600 hover:underline"
-                >
-                  Visit
-                </a>
-              }
-              accent="emerald"
-            />
-          )}
-
-          {banner.buttonText && (
-            <InfoCard
-              icon={<Tag size={15} className="text-teal-600" />}
-              label="Button Text"
-              value={banner.buttonText}
-              accent="teal"
-            />
-          )}
-
-          {banner.seoTitle && (
-            <InfoCard
-              icon={<Globe size={15} className="text-cyan-600" />}
-              label="SEO Title"
-              value={
-                <span className="truncate text-xs">{banner.seoTitle}</span>
-              }
-              accent="cyan"
-            />
-          )}
-
-          <InfoCard
-            icon={<Calendar size={15} className="text-teal-600" />}
-            label="Created At"
-            value={fmt(banner.createdAt)}
-            accent="teal"
-          />
-
-          <InfoCard
-            icon={<Tag size={15} className="text-emerald-600" />}
-            label="Banner ID"
-            value={
-              <span className="font-mono text-xs text-gray-500 truncate">
+            {banner.seoDescription && (
+              <div className="mt-3 rounded-xl bg-gray-50 p-4">
+                <p className="text-[11px] font-semibold uppercase tracking-widest text-gray-400">
+                  SEO Description
+                </p>
+                <p className="mt-2 text-[13px] leading-relaxed text-gray-600">
+                  {banner.seoDescription}
+                </p>
+              </div>
+            )}
+            <div className="mt-6 flex items-center gap-2 rounded-lg border border-dashed border-gray-200 bg-gray-50 px-3 py-2.5">
+              <span className="text-[11px] text-gray-400 font-medium">ID</span>
+              <p className="truncate font-mono text-[11px] text-gray-500">
                 {banner._id}
-              </span>
-            }
-            accent="emerald"
-          />
-        </div>
-
-        {/* ─── DESKTOP IMAGE PREVIEW ─── */}
-        <div className="mt-5 px-6">
-          <p className="mb-2.5 flex items-center gap-2 text-xs font-semibold uppercase tracking-wide text-gray-500">
-            <ImageIcon size={14} />
-            Desktop Image
-          </p>
-
-          <div className="overflow-hidden rounded-2xl border border-emerald-100 bg-gradient-to-br from-emerald-50 to-cyan-50 p-2.5">
-            <img
-              src={desktopUrl}
-              alt={banner.name}
-              className="h-44 w-full rounded-xl object-cover"
-            />
-          </div>
-        </div>
-
-        {/* ─── MOBILE IMAGE PREVIEW ─── */}
-        {mobileUrl && (
-          <div className="mt-4 px-6">
-            <p className="mb-2.5 flex items-center gap-2 text-xs font-semibold uppercase tracking-wide text-gray-500">
-              <Smartphone size={14} />
-              Mobile Image
-            </p>
-
-            <div className="overflow-hidden rounded-2xl border border-teal-100 bg-gradient-to-br from-teal-50 to-cyan-50 p-2.5">
-              <img
-                src={mobileUrl}
-                alt={`${banner.name} mobile`}
-                className="h-36 w-full rounded-xl object-cover"
-              />
+              </p>
             </div>
           </div>
-        )}
-
-        {/* ─── DESCRIPTION ─── */}
-        {banner.description && (
-          <div className="mt-4 px-6">
-            <p className="mb-2 text-xs font-semibold uppercase tracking-wide text-gray-500">
-              Description
-            </p>
-            <p className="rounded-xl border border-slate-100 bg-slate-50 px-4 py-3 text-sm leading-relaxed text-slate-600">
-              {banner.description}
-            </p>
-          </div>
-        )}
-
-        {/* ─── FOOTER ─── */}
-        <div className="mt-5 border-t border-gray-100 bg-gray-50/70 px-6 py-4">
-          <button
-            onClick={onClose}
-            className="w-full rounded-xl bg-gradient-to-r from-emerald-500 via-teal-500 to-cyan-500 py-2.5 text-sm font-semibold text-white shadow-sm transition hover:opacity-90 hover:shadow-md active:scale-[0.98]"
-          >
-            Done
-          </button>
+          <div className="h-8" />
         </div>
       </div>
     </div>

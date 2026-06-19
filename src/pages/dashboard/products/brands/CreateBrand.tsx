@@ -32,9 +32,6 @@ import {
 import { toast } from "sonner";
 import { useCreateBrand } from "@/hooks/brand/useBrandActions";
 
-// =========================================
-// TYPES
-// =========================================
 type BrandCategory =
   | "baby-care"
   | "diapers"
@@ -63,9 +60,6 @@ type FormValues = {
   seoDescription: string;
 };
 
-// =========================================
-// CONSTANTS
-// =========================================
 const BRAND_CATEGORIES: {
   value: BrandCategory;
   label: string;
@@ -88,9 +82,6 @@ const BRAND_CATEGORIES: {
 const cardStyle =
   "rounded-3xl border border-slate-200 bg-white p-7 shadow-sm hover:shadow-lg transition-all duration-300";
 
-// =========================================
-// SECTION HEADER COMPONENT
-// =========================================
 const SectionHeader = ({
   icon: Icon,
   title,
@@ -111,9 +102,6 @@ const SectionHeader = ({
   </div>
 );
 
-// =========================================
-// BRAND CATEGORY SELECT COMPONENT
-// =========================================
 const BrandCategorySelect = ({
   value,
   onChange,
@@ -217,9 +205,6 @@ const BrandCategorySelect = ({
   );
 };
 
-// =========================================
-// CHAR COUNTER COMPONENT
-// =========================================
 const CharCount = ({ current, max }: { current: number; max: number }) => (
   <span
     className={`text-xs ${current > max * 0.9 ? "text-amber-500" : "text-slate-400"}`}
@@ -228,9 +213,6 @@ const CharCount = ({ current, max }: { current: number; max: number }) => (
   </span>
 );
 
-// =========================================
-// TOGGLE BUTTON COMPONENT
-// =========================================
 const ToggleField = ({
   label,
   description,
@@ -291,9 +273,6 @@ const ToggleField = ({
   );
 };
 
-// =========================================
-// MAIN COMPONENT
-// =========================================
 const CreateBrand = () => {
   const navigate = useNavigate();
   const [logoFile, setLogoFile] = useState<File | null>(null);
@@ -336,9 +315,6 @@ const CreateBrand = () => {
   const watchedCategory = watch("category");
   const watchedWebsite = watch("website");
 
-  // =========================================
-  // LOGO UPLOAD
-  // =========================================
   const handleLogoUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const selected = e.target.files?.[0];
     if (!selected) return;
@@ -357,9 +333,6 @@ const CreateBrand = () => {
     setValue("logo", "");
   };
 
-  // =========================================
-  // BANNER UPLOAD
-  // =========================================
   const handleBannerUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const files = Array.from(e.target.files ?? []);
     if (!files.length) return;
@@ -389,9 +362,6 @@ const CreateBrand = () => {
     setBannerPreviews((prev) => prev.filter((_, i) => i !== index));
   };
 
-  // =========================================
-  // AUTO-FILL SEO
-  // =========================================
   const autoFillSeo = () => {
     if (watchedName && !watchedSeoTitle) {
       setValue("seoTitle", `${watchedName} | Baby Store`);
@@ -401,9 +371,6 @@ const CreateBrand = () => {
     }
   };
 
-  // =========================================
-  // SUBMIT
-  // =========================================
   const onSubmit = async (data: FormValues) => {
     if (!logoFile) {
       toast.error("Please upload a brand logo");
@@ -446,9 +413,6 @@ const CreateBrand = () => {
     }
   };
 
-  // =========================================
-  // SLUG PREVIEW
-  // =========================================
   const slugPreview = watchedName
     ? watchedName
         .toLowerCase()
@@ -472,7 +436,6 @@ const CreateBrand = () => {
       <div className="mx-auto py-8">
         <form onSubmit={handleSubmit(onSubmit)}>
           <div className="grid gap-8 xl:grid-cols-12">
-            {/* ================= LEFT SECTION ================= */}
             <div className="space-y-8 xl:col-span-8">
               <motion.div
                 initial={{ opacity: 0, y: 15 }}
@@ -944,7 +907,6 @@ const CreateBrand = () => {
               </motion.div>
             </div>
 
-            {/* ================= RIGHT SIDEBAR ================= */}
             <div className="xl:col-span-4">
               <div className="sticky top-6">
                 <div className="overflow-hidden rounded-3xl border border-slate-200 bg-white shadow-xl shadow-slate-100">

@@ -33,9 +33,6 @@ import { toast } from "sonner";
 import { useBrands } from "@/hooks/brand/useBrands";
 import { useUpdateBrand } from "@/hooks/brand/useBrandActions";
 
-// =========================================
-// TYPES
-// =========================================
 type BrandCategory =
   | "baby-care"
   | "diapers"
@@ -64,9 +61,6 @@ type FormValues = {
   seoDescription: string;
 };
 
-// =========================================
-// CONSTANTS
-// =========================================
 const BRAND_CATEGORIES: {
   value: BrandCategory;
   label: string;
@@ -89,9 +83,6 @@ const BRAND_CATEGORIES: {
 const cardStyle =
   "rounded-3xl border border-slate-200 bg-white p-7 shadow-sm hover:shadow-lg transition-all duration-300";
 
-// =========================================
-// SECTION HEADER COMPONENT
-// =========================================
 const SectionHeader = ({
   icon: Icon,
   title,
@@ -112,9 +103,6 @@ const SectionHeader = ({
   </div>
 );
 
-// =========================================
-// BRAND CATEGORY SELECT COMPONENT
-// =========================================
 const BrandCategorySelect = ({
   value,
   onChange,
@@ -218,9 +206,6 @@ const BrandCategorySelect = ({
   );
 };
 
-// =========================================
-// CHAR COUNTER COMPONENT
-// =========================================
 const CharCount = ({ current, max }: { current: number; max: number }) => (
   <span
     className={`text-xs ${current > max * 0.9 ? "text-amber-500" : "text-slate-400"}`}
@@ -229,9 +214,6 @@ const CharCount = ({ current, max }: { current: number; max: number }) => (
   </span>
 );
 
-// =========================================
-// TOGGLE FIELD COMPONENT
-// =========================================
 const ToggleField = ({
   label,
   description,
@@ -292,9 +274,6 @@ const ToggleField = ({
   );
 };
 
-// =========================================
-// MAIN COMPONENT
-// =========================================
 const EditBrand = () => {
   const navigate = useNavigate();
   const { id } = useParams<{ id: string }>();
@@ -302,7 +281,6 @@ const EditBrand = () => {
   const [logoFile, setLogoFile] = useState<File | null>(null);
   const [bannerFiles, setBannerFiles] = useState<File[]>([]);
   const [bannerPreviews, setBannerPreviews] = useState<string[]>([]);
-  // Track which banners are pre-existing (from server) vs newly uploaded
   const [existingBannerUrls, setExistingBannerUrls] = useState<string[]>([]);
   const [existingBannerIds, setExistingBannerIds] = useState<string[]>([]);
 
@@ -343,9 +321,6 @@ const EditBrand = () => {
   const watchedCategory = watch("category");
   const watchedWebsite = watch("website");
 
-  // =========================================
-  // FETCH & PREFILL
-  // =========================================
   useEffect(() => {
     if (id) getBrandById(id);
   }, [id]);
@@ -378,9 +353,6 @@ const EditBrand = () => {
     }
   }, [selectedBrand]);
 
-  // =========================================
-  // LOGO UPLOAD
-  // =========================================
   const handleLogoUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const selected = e.target.files?.[0];
     if (!selected) return;
@@ -399,9 +371,6 @@ const EditBrand = () => {
     setValue("logo", "");
   };
 
-  // =========================================
-  // BANNER UPLOAD
-  // =========================================
   const handleBannerUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const files = Array.from(e.target.files ?? []);
     if (!files.length) return;
@@ -433,9 +402,6 @@ const EditBrand = () => {
     setExistingBannerIds((prev) => prev.filter((_, i) => i !== index));
   };
 
-  // =========================================
-  // AUTO-FILL SEO
-  // =========================================
   const autoFillSeo = () => {
     if (watchedName && !watchedSeoTitle) {
       setValue("seoTitle", `${watchedName} | Baby Store`);
@@ -445,9 +411,6 @@ const EditBrand = () => {
     }
   };
 
-  // =========================================
-  // SUBMIT
-  // =========================================
   const onSubmit = async (data: FormValues) => {
     if (!id) return;
 
@@ -501,9 +464,6 @@ const EditBrand = () => {
     }
   };
 
-  // =========================================
-  // SLUG PREVIEW
-  // =========================================
   const slugPreview = watchedName
     ? watchedName
         .toLowerCase()
@@ -527,7 +487,6 @@ const EditBrand = () => {
       <div className="mx-auto py-8">
         <form onSubmit={handleSubmit(onSubmit)}>
           <div className="grid gap-8 xl:grid-cols-12">
-            {/* ================= LEFT SECTION ================= */}
             <div className="space-y-8 xl:col-span-8">
               <motion.div
                 initial={{ opacity: 0, y: 15 }}
@@ -1012,7 +971,6 @@ const EditBrand = () => {
               </motion.div>
             </div>
 
-            {/* ================= RIGHT SIDEBAR ================= */}
             <div className="xl:col-span-4">
               <div className="sticky top-6">
                 <div className="overflow-hidden rounded-3xl border border-slate-200 bg-white shadow-xl shadow-slate-100">

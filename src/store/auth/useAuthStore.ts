@@ -1,6 +1,6 @@
 import { create } from "zustand";
 import { persist } from "zustand/middleware";
-import type { AuthUser, RegisterCredentials } from "@/types/auth";
+import type { AuthUser, RegisterCredentials } from "@/types/auth.type";
 import { authService } from "@/services/AuthService";
 import type { LoginCredentials } from "@/schemas/auth.schema";
 

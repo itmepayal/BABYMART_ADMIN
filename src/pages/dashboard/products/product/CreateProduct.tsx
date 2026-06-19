@@ -44,19 +44,13 @@ import {
   type CreateProductFormData,
 } from "@/validations/product.validation";
 import { zodResolver } from "@hookform/resolvers/zod";
-import type { ISeller } from "@/types/users";
+import type { ISeller } from "@/types/user.type";
 
-// =========================================
-// CONSTANTS
-// =========================================
 const cardStyle =
   "rounded-3xl border border-slate-200 bg-white p-7 shadow-sm hover:shadow-lg transition-all duration-300";
 
 const defaultImage = { url: "" };
 
-// =========================================
-// SECTION HEADER
-// =========================================
 const SectionHeader = ({
   icon: Icon,
   title,
@@ -91,9 +85,6 @@ const SectionHeader = ({
   </div>
 );
 
-// =========================================
-// CHAR COUNTER
-// =========================================
 const CharCount = ({ current, max }: { current: number; max: number }) => (
   <span
     className={`text-xs ${current > max * 0.9 ? "text-amber-500" : "text-slate-400"}`}
@@ -102,9 +93,6 @@ const CharCount = ({ current, max }: { current: number; max: number }) => (
   </span>
 );
 
-// =========================================
-// CATEGORY SELECT  (emoji + image)
-// =========================================
 const CategorySelectDropdown = ({
   value,
   onChange,
@@ -220,9 +208,6 @@ const CategorySelectDropdown = ({
   );
 };
 
-// =========================================
-// BRAND SELECT
-// =========================================
 const BrandSelectDropdown = ({
   value,
   onChange,
@@ -447,9 +432,6 @@ const SellerSelectDropdown = ({
   );
 };
 
-// =========================================
-// PRICE DISPLAY
-// =========================================
 const PriceDisplay = ({
   price,
   discount,
@@ -484,9 +466,6 @@ const PriceDisplay = ({
   );
 };
 
-// =========================================
-// MAIN COMPONENT
-// =========================================
 export default function CreateProduct() {
   const navigate = useNavigate();
   const [files, setFiles] = useState<File[]>([]);
@@ -527,9 +506,6 @@ export default function CreateProduct() {
     name: "images",
   });
 
-  // =========================================
-  // IMAGE UPLOAD
-  // =========================================
   const handleImageUpload = (
     e: React.ChangeEvent<HTMLInputElement>,
     index: number,
@@ -562,9 +538,6 @@ export default function CreateProduct() {
     setFiles((prev) => prev.filter((_, i) => i !== index));
   };
 
-  // =========================================
-  // TAGS
-  // =========================================
   const watchedTags: string[] = watch("tags") || [];
 
   const addTag = () => {
@@ -598,9 +571,6 @@ export default function CreateProduct() {
     }
   };
 
-  // =========================================
-  // SUBMIT
-  // =========================================
   const onSubmit = async (data: CreateProductFormData) => {
     const uploadedFiles = files.filter(Boolean);
     if (!uploadedFiles.length) {
@@ -633,9 +603,6 @@ export default function CreateProduct() {
     });
   }, []);
 
-  // =========================================
-  // DERIVED VALUES
-  // =========================================
   const watchedName = watch("name");
   const watchedPrice = watch("price") || 0;
   const watchedDiscount = watch("discountPercentage") || 0;
@@ -677,7 +644,6 @@ export default function CreateProduct() {
 
   return (
     <div className="min-h-screen">
-      {/* ================= HEADER ================= */}
       <Header
         title="Create Product"
         description="Add a new product to your catalog"
@@ -688,11 +654,9 @@ export default function CreateProduct() {
         isRefreshiingShow={false}
       />
 
-      {/* ================= FORM ================= */}
       <div className="mx-auto py-8">
         <form onSubmit={handleSubmit(onSubmit)}>
           <div className="grid gap-8 xl:grid-cols-12">
-            {/* ============= LEFT SECTION ============= */}
             <div className="space-y-8 xl:col-span-8">
               <motion.div
                 initial={{ opacity: 0, y: 15 }}
@@ -707,7 +671,6 @@ export default function CreateProduct() {
                 />
 
                 <div className="space-y-5">
-                  {/* Name + Slug */}
                   <div>
                     <FormField
                       label="Product Name"
@@ -1141,7 +1104,6 @@ export default function CreateProduct() {
               </motion.div>
             </div>
 
-            {/* ============= RIGHT SIDEBAR ============= */}
             <div className="xl:col-span-4">
               <div className="sticky top-6">
                 <div className="overflow-hidden rounded-3xl border border-slate-200 bg-white shadow-xl shadow-slate-100">

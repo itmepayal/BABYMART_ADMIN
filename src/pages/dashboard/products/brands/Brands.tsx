@@ -43,8 +43,6 @@ import { defaultAvatar } from "@/assets";
 import { ViewBrand } from "@/pages/dashboard/products/brands/ViewBrand";
 import { BrandSkeleton } from "@/components/skeletons/BrandSkeleton";
 
-// ─── Status Badge ────────────────────────────────────────────────────────────
-
 const StatusBadge = ({
   status,
 }: {
@@ -77,15 +75,11 @@ const StatusBadge = ({
   );
 };
 
-// ─── Category Chip ────────────────────────────────────────────────────────────
-
 const CategoryChip = ({ label }: { label: string }) => (
   <span className="inline-flex items-center rounded-lg bg-teal-50 px-2.5 py-1 text-xs font-semibold text-teal-700 border border-teal-100 capitalize">
     {label}
   </span>
 );
-
-// ─── Verified / Featured Badges ───────────────────────────────────────────────
 
 const VerifiedBadge = ({ verified }: { verified: boolean }) =>
   verified ? (
@@ -102,8 +96,6 @@ const FeaturedBadge = ({ featured }: { featured: boolean }) =>
       Featured
     </span>
   ) : null;
-
-// ─── Bulk Toolbar ─────────────────────────────────────────────────────────────
 
 interface BulkToolbarProps {
   count: number;
@@ -165,8 +157,6 @@ const BulkToolbar = ({
   </div>
 );
 
-// ─── Empty State ──────────────────────────────────────────────────────────────
-
 const EmptyState = ({ searching }: { searching: boolean }) => (
   <TableRow>
     <TableCell colSpan={8}>
@@ -191,8 +181,6 @@ const EmptyState = ({ searching }: { searching: boolean }) => (
     </TableCell>
   </TableRow>
 );
-
-// ─── Main Component ───────────────────────────────────────────────────────────
 
 const Brands = () => {
   const navigate = useNavigate();

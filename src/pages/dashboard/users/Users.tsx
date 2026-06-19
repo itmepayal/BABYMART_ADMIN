@@ -42,7 +42,7 @@ import { ConfirmModal } from "@/components/dashbaord/ConfirmModal";
 import { UserViewModal } from "@/components/dashbaord/UserViewModal";
 import { UserSkeleton } from "@/components/skeletons/UserSkeleton";
 
-import type { User as UserType } from "@/types/users";
+import type { User as UserType } from "@/types/user.type";
 
 const UsersPage = () => {
   const navigate = useNavigate();

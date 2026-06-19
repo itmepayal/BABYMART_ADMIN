@@ -3,10 +3,9 @@ import type {
   GetAllUsersResponse,
   GetSellersResponse,
   GetUsersParams,
-} from "@/types/users";
+} from "@/types/user.type";
 
 export const usersServices = {
-  // ================= USERS LIST =================
   getAllUsers: async (
     params: GetUsersParams = {},
   ): Promise<GetAllUsersResponse> => {
@@ -19,7 +18,6 @@ export const usersServices = {
     return data;
   },
 
-  // ================= SELLERS =================
   getAllSellers: async (
     params: GetUsersParams = {},
   ): Promise<GetSellersResponse> => {
@@ -36,55 +34,46 @@ export const usersServices = {
     return data;
   },
 
-  // ================= GET USER BY ID =================
   getUserById: async (userId: string) => {
     const { data } = await api.get(`/users/${userId}`);
     return data;
   },
 
-  // ================= CREATE USER  =================
   createUser: async (payload: any) => {
     const { data } = await api.post("/users", payload);
     return data;
   },
 
-  // ================= UPDATE USER =================
   updateUser: async (userId: string, payload: any) => {
     const { data } = await api.patch(`/users/${userId}`, payload);
     return data;
   },
 
-  // ================= DELETE USER =================
   deleteUser: async (userId: string) => {
     const { data } = await api.delete(`/users/${userId}`);
     return data;
   },
 
-  // ================= BLOCK / UNBLOCK =================
   toggleBlockUser: async (userId: string) => {
     const { data } = await api.patch(`/users/${userId}/block`);
     return data;
   },
 
-  // ================= CHANGE ROLE =================
   changeUserRole: async (userId: string, role: string) => {
     const { data } = await api.patch(`/users/${userId}/role`, { role });
     return data;
   },
 
-  // ================= RESTORE USER =================
   restoreUser: async (userId: string) => {
     const { data } = await api.patch(`/users/${userId}/restore`);
     return data;
   },
 
-  // ================= PERMANENT DELETE =================
   bulkPermanentDeleteUsers: async (userIds: string[]) => {
     const { data } = await api.patch("/users/bulk/permanent", { userIds });
     return data;
   },
 
-  // ================= BULK ACTIONS =================
   bulkDeleteUsers: async (ids: string[]) => {
     const { data } = await api.patch("/users/bulk/delete", { ids });
     return data;
@@ -95,7 +84,6 @@ export const usersServices = {
     return data;
   },
 
-  // ================= AVATAR =================
   changeAvatarUser: async (formData: FormData, userId?: string) => {
     const endpoint = userId ? `/users/avatar/${userId}` : `/users/me/avatar`;
 
@@ -111,13 +99,11 @@ export const usersServices = {
     return data;
   },
 
-  // ================= ME PROFILE =================
   updateMyAccount: async (payload: any) => {
     const { data } = await api.patch("/users/me", payload);
     return data;
   },
 
-  // ================= ADDRESSES =================
   getMyAddresses: async () => {
     const { data } = await api.get("/users/me/addresses");
     return data;

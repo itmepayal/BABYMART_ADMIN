@@ -1,12 +1,14 @@
 import {
   X,
-  Image as ImageIcon,
-  CheckCircle,
+  CheckCircle2,
   XCircle,
-  Calendar,
   Tag,
+  Star,
   Globe,
   Layers,
+  Calendar,
+  ShieldCheck,
+  ExternalLink,
 } from "lucide-react";
 
 import { defaultAvatar } from "@/assets";
@@ -36,6 +38,41 @@ type Props = {
   onClose: () => void;
 };
 
+const fmt = (dateStr?: string) => {
+  if (!dateStr) return "—";
+  const d = new Date(dateStr);
+  if (isNaN(d.getTime())) return dateStr;
+  return d.toLocaleDateString("en-IN", {
+    day: "numeric",
+    month: "short",
+    year: "numeric",
+  });
+};
+
+type RowProps = {
+  label: string;
+  value: React.ReactNode;
+  icon?: React.ReactNode;
+};
+
+const Row = ({ label, value, icon }: RowProps) => (
+  <tr className="group border-t border-gray-100">
+    <td className="py-3 text-[13px] text-gray-400 font-medium">
+      <span className="flex items-center gap-2">
+        {icon && (
+          <span className="text-gray-300 group-hover:text-gray-400 transition-colors">
+            {icon}
+          </span>
+        )}
+        {label}
+      </span>
+    </td>
+    <td className="py-3 text-right text-[13px] font-medium text-gray-800">
+      {value}
+    </td>
+  </tr>
+);
+
 export const ViewBrand = ({ brand, onClose }: Props) => {
   if (!brand) return null;
 
@@ -44,202 +81,208 @@ export const ViewBrand = ({ brand, onClose }: Props) => {
   return (
     <div
       onClick={onClose}
-      className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4 backdrop-blur-sm"
+      className="fixed inset-0 z-50 flex justify-end bg-black/50 backdrop-blur-[3px]"
     >
       <div
         onClick={(e) => e.stopPropagation()}
-        className="animate-in fade-in zoom-in-95 relative w-full max-w-md overflow-hidden rounded-3xl bg-white shadow-2xl duration-200"
+        className="animate-in slide-in-from-right relative flex h-full w-full max-w-xl overflow-hidden bg-white shadow-2xl duration-300"
       >
-        <div className="relative h-36 bg-gradient-to-br from-emerald-500 via-teal-500 to-cyan-500">
-          <div className="absolute -bottom-8 -right-8 h-32 w-32 rounded-full bg-white/10" />
-          <div className="absolute -bottom-14 -right-14 h-48 w-48 rounded-full bg-white/5" />
-          <div className="absolute -top-6 -left-6 h-24 w-24 rounded-full bg-white/10" />
+        <div
+          className={`w-1 flex-shrink-0 ${
+            brand.isActive
+              ? "bg-gradient-to-b from-emerald-400 to-emerald-600"
+              : "bg-gradient-to-b from-red-300 to-red-500"
+          }`}
+        />
 
-          <div className="absolute bottom-14 left-6">
-            <p className="text-xs -mt-18 font-semibold uppercase tracking-widest text-white/70">
-              Brand Details
-            </p>
-          </div>
-
-          <button
-            onClick={onClose}
-            className="absolute right-4 top-4 flex h-8 w-8 items-center justify-center rounded-full bg-white/20 text-white transition hover:bg-white/30 hover:scale-105"
-          >
-            <X size={16} />
-          </button>
-        </div>
-
-        <div className="relative px-6">
-          <div className="-mt-26 flex items-end gap-4">
-            <div className="relative shrink-0">
-              <img
-                src={logoUrl}
-                alt={brand.name}
-                className="h-24 w-24 rounded-2xl border-4 border-white object-cover shadow-xl"
-              />
-
-              <span
-                className={`absolute -bottom-1 -right-1 h-4 w-4 rounded-full border-2 border-white ${
+        <div className="flex-1 overflow-y-auto">
+          <div className="sticky top-0 z-10 flex items-center justify-between border-b border-gray-100 bg-white/98 px-6 py-4 backdrop-blur-sm">
+            <div className="min-w-0 flex items-center gap-3">
+              <div
+                className={`h-2 w-2 rounded-full flex-shrink-0 ${
                   brand.isActive ? "bg-emerald-500" : "bg-red-400"
                 }`}
               />
+              <div className="min-w-0">
+                <p className="text-[11px] font-semibold uppercase tracking-widest text-gray-400">
+                  Brand Details
+                </p>
+                <h2 className="mt-0.5 truncate text-[15px] font-semibold text-gray-900">
+                  {brand.name}
+                </h2>
+              </div>
+            </div>
+            <button
+              onClick={onClose}
+              aria-label="Close"
+              className="ml-4 flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-lg border border-gray-200 text-gray-400 transition-all hover:bg-gray-50 hover:text-gray-600 hover:border-gray-300"
+            >
+              <X size={15} />
+            </button>
+          </div>
+
+          <div className="px-6 pt-5">
+            <div className="relative overflow-hidden rounded-xl border border-gray-100 bg-gray-50 h-44 flex items-center justify-center">
+              <img
+                src={logoUrl}
+                alt={brand.name}
+                className="h-full w-full object-cover"
+              />
+              <div className="absolute -bottom-5 left-5">
+                <div className="relative">
+                  <img
+                    src={logoUrl}
+                    alt={brand.name}
+                    className="h-16 w-16 rounded-xl border-4 border-white object-cover shadow-md"
+                  />
+                  <span
+                    className={`absolute -bottom-1 -right-1 h-4 w-4 rounded-full border-2 border-white ${
+                      brand.isActive ? "bg-emerald-500" : "bg-red-400"
+                    }`}
+                  />
+                </div>
+              </div>
             </div>
 
-            <div className="min-w-0 pb-2">
-              <h2 className="truncate text-xl font-bold leading-tight text-white">
+            <div className="mt-8 ml-1">
+              <h3 className="text-[15px] font-semibold text-gray-900 leading-snug">
                 {brand.name}
-              </h2>
+              </h3>
+              <p className="mt-0.5 text-[13px] text-gray-400 font-mono">
+                /{brand.slug}
+              </p>
+            </div>
 
+            <div className="mt-3 flex flex-wrap gap-2">
               <span
-                className={`mt-1.5 inline-flex items-center gap-1.5 rounded-full px-3 py-1 text-[11px] font-semibold uppercase tracking-wide ${
+                className={`flex items-center gap-1.5 rounded-lg px-3 py-1.5 text-[12px] font-semibold ${
                   brand.isActive
-                    ? "bg-emerald-50 text-emerald-700"
-                    : "bg-red-50 text-red-600"
+                    ? "bg-emerald-50 text-emerald-700 ring-1 ring-emerald-200"
+                    : "bg-red-50 text-red-600 ring-1 ring-red-200"
                 }`}
               >
                 {brand.isActive ? (
-                  <CheckCircle size={12} />
+                  <CheckCircle2 size={13} />
                 ) : (
-                  <XCircle size={12} />
+                  <XCircle size={13} />
                 )}
-
                 {brand.isActive ? "Active" : "Inactive"}
               </span>
-            </div>
-          </div>
-        </div>
 
-        <div className="mt-5 space-y-2.5 px-6">
-          <InfoCard
-            icon={<Tag size={15} className="text-teal-600" />}
-            label="Category"
-            value={brand.category}
-            accent="teal"
-          />
-
-          <InfoCard
-            icon={<Layers size={15} className="text-cyan-600" />}
-            label="Banners"
-            value={brand.banners?.length || 0}
-            accent="cyan"
-          />
-
-          {brand.website && (
-            <InfoCard
-              icon={<Globe size={15} className="text-emerald-600" />}
-              label="Website"
-              value={
-                <a
-                  href={brand.website}
-                  target="_blank"
-                  rel="noreferrer"
-                  className="truncate text-cyan-600 hover:underline"
-                >
-                  Visit
-                </a>
-              }
-              accent="emerald"
-            />
-          )}
-
-          <InfoCard
-            icon={<Calendar size={15} className="text-cyan-600" />}
-            label="Created at"
-            value={new Date(brand.createdAt).toLocaleDateString("en-IN", {
-              day: "numeric",
-              month: "short",
-              year: "numeric",
-            })}
-            accent="cyan"
-          />
-
-          <InfoCard
-            icon={<Tag size={15} className="text-emerald-600" />}
-            label="Brand ID"
-            value={
-              <span className="font-mono text-xs text-gray-500 truncate">
-                {brand._id}
+              <span className="flex items-center gap-1.5 rounded-lg bg-gray-100 px-3 py-1.5 text-[12px] font-semibold capitalize text-gray-600">
+                <Tag size={13} />
+                {brand.category}
               </span>
-            }
-            accent="emerald"
-          />
-        </div>
 
-        <div className="mt-5 px-6">
-          <p className="mb-2.5 flex items-center gap-2 text-xs font-semibold uppercase tracking-wide text-gray-500">
-            <ImageIcon size={14} />
-            Logo Preview
-          </p>
+              {brand.isVerified && (
+                <span className="flex items-center gap-1.5 rounded-lg bg-blue-50 px-3 py-1.5 text-[12px] font-semibold text-blue-700 ring-1 ring-blue-200">
+                  <ShieldCheck size={13} />
+                  Verified
+                </span>
+              )}
 
-          <div className="overflow-hidden rounded-2xl border border-emerald-100 bg-gradient-to-br from-emerald-50 to-cyan-50 p-2.5">
-            <img
-              src={logoUrl}
-              alt={brand.name}
-              className="h-44 w-full rounded-xl object-cover"
-            />
-          </div>
-        </div>
+              {brand.isFeatured && (
+                <span className="flex items-center gap-1.5 rounded-lg bg-amber-50 px-3 py-1.5 text-[12px] font-semibold text-amber-700 ring-1 ring-amber-200">
+                  <Star size={13} />
+                  Featured
+                </span>
+              )}
+            </div>
 
-        {brand.banners && brand.banners.length > 0 && (
-          <div className="mt-5 px-6">
-            <p className="mb-3 text-xs font-semibold uppercase tracking-wide text-gray-500">
-              Brand Banners
-            </p>
+            <div className="mt-5 border-t border-gray-100" />
 
-            <div className="grid grid-cols-3 gap-3">
-              {brand.banners.map((banner, index) => (
-                <img
-                  key={index}
-                  src={banner.url}
-                  alt={`banner-${index}`}
-                  className="h-20 w-full rounded-xl border object-cover"
+            <table className="mt-1 w-full">
+              <tbody>
+                <Row
+                  icon={<Tag size={13} />}
+                  label="Category"
+                  value={
+                    <span className="inline-flex items-center gap-1 rounded-md bg-gray-50 px-2 py-0.5 capitalize text-gray-700">
+                      {brand.category}
+                    </span>
+                  }
                 />
-              ))}
+
+                <Row
+                  icon={<Layers size={13} />}
+                  label="Banners"
+                  value={
+                    <span className="inline-flex items-center gap-1 rounded-md bg-gray-50 px-2 py-0.5 text-gray-700">
+                      {brand.banners?.length ?? 0} banner
+                      {(brand.banners?.length ?? 0) !== 1 ? "s" : ""}
+                    </span>
+                  }
+                />
+
+                {brand.website && (
+                  <Row
+                    icon={<Globe size={13} />}
+                    label="Website"
+                    value={
+                      <a
+                        href={brand.website}
+                        target="_blank"
+                        rel="noreferrer"
+                        className="inline-flex items-center gap-1 rounded-md bg-cyan-50 px-2 py-0.5 text-cyan-700 hover:bg-cyan-100 transition-colors"
+                      >
+                        Visit site
+                        <ExternalLink size={11} />
+                      </a>
+                    }
+                  />
+                )}
+
+                <Row
+                  icon={<Calendar size={13} />}
+                  label="Created"
+                  value={fmt(brand.createdAt)}
+                />
+              </tbody>
+            </table>
+
+            {brand.description && (
+              <div className="mt-5 rounded-xl bg-gray-50 p-4">
+                <p className="text-[11px] font-semibold uppercase tracking-widest text-gray-400">
+                  Description
+                </p>
+                <p className="mt-2 text-[13px] leading-relaxed text-gray-600 line-clamp-3">
+                  {brand.description}
+                </p>
+              </div>
+            )}
+
+            {brand.banners && brand.banners.length > 0 && (
+              <div className="mt-5">
+                <p className="text-[11px] font-semibold uppercase tracking-widest text-gray-400 mb-3">
+                  Brand Banners
+                </p>
+                <div className="grid grid-cols-3 gap-2.5">
+                  {brand.banners.map((banner, index) => (
+                    <div
+                      key={index}
+                      className="overflow-hidden rounded-xl border border-gray-100"
+                    >
+                      <img
+                        src={banner.url}
+                        alt={`banner-${index + 1}`}
+                        className="h-20 w-full object-cover"
+                      />
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            <div className="mt-6 flex items-center gap-2 rounded-lg border border-dashed border-gray-200 bg-gray-50 px-3 py-2.5">
+              <span className="text-[11px] text-gray-400 font-medium">ID</span>
+              <p className="truncate font-mono text-[11px] text-gray-500">
+                {brand._id}
+              </p>
             </div>
           </div>
-        )}
 
-        <div className="mt-5 border-t border-gray-100 bg-gray-50/70 px-6 py-4">
-          <button
-            onClick={onClose}
-            className="w-full rounded-xl bg-gradient-to-r from-emerald-500 via-teal-500 to-cyan-500 py-2.5 text-sm font-semibold text-white shadow-sm transition hover:opacity-90 hover:shadow-md active:scale-[0.98]"
-          >
-            Done
-          </button>
+          <div className="h-8" />
         </div>
-      </div>
-    </div>
-  );
-};
-
-type InfoCardProps = {
-  icon: React.ReactNode;
-  label: string;
-  value: React.ReactNode;
-  accent: "emerald" | "teal" | "cyan";
-};
-
-const accentMap = {
-  emerald: "bg-emerald-50 border-emerald-100",
-  teal: "bg-teal-50 border-teal-100",
-  cyan: "bg-cyan-50 border-cyan-100",
-};
-
-const InfoCard = ({ icon, label, value, accent }: InfoCardProps) => {
-  return (
-    <div
-      className={`flex items-center justify-between rounded-xl border px-4 py-3 transition hover:brightness-95 ${accentMap[accent]}`}
-    >
-      <div className="flex items-center gap-2.5">
-        <div className="flex h-7 w-7 items-center justify-center rounded-lg bg-white shadow-sm">
-          {icon}
-        </div>
-
-        <span className="text-sm font-medium text-gray-500">{label}</span>
-      </div>
-
-      <div className="max-w-[55%] text-right text-sm font-medium text-gray-800">
-        {value}
       </div>
     </div>
   );

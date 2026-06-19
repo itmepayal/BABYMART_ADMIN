@@ -45,8 +45,6 @@ import { defaultAvatar } from "@/assets";
 import { ViewBanner } from "@/pages/dashboard/products/banner/ViewBanner";
 import { BannerSkeleton } from "@/components/skeletons/BannerSkeleton";
 
-// ─── Status Badge ─────────────────────────────────────────────────────────────
-
 const StatusBadge = ({
   status,
 }: {
@@ -78,8 +76,6 @@ const StatusBadge = ({
     </span>
   );
 };
-
-// ─── Banner Type Chip ─────────────────────────────────────────────────────────
 
 const BANNER_TYPE_STYLES: Record<string, string> = {
   home: "bg-teal-50 text-teal-700 border-teal-100",
@@ -113,8 +109,6 @@ const BannerTypeChip = ({ type }: { type: string }) => {
   );
 };
 
-// ─── Featured / Discount Badges ───────────────────────────────────────────────
-
 const FeaturedBadge = ({ featured }: { featured: boolean }) =>
   featured ? (
     <span className="inline-flex items-center gap-1 rounded-full bg-violet-50 px-2 py-0.5 text-[10px] font-semibold text-violet-600 border border-violet-100">
@@ -138,8 +132,6 @@ const MobileBadge = ({ hasMobile }: { hasMobile: boolean }) =>
       Mobile
     </span>
   ) : null;
-
-// ─── Bulk Toolbar ─────────────────────────────────────────────────────────────
 
 interface BulkToolbarProps {
   count: number;
@@ -201,8 +193,6 @@ const BulkToolbar = ({
   </div>
 );
 
-// ─── Empty State ──────────────────────────────────────────────────────────────
-
 const EmptyState = ({ searching }: { searching: boolean }) => (
   <TableRow>
     <TableCell colSpan={9}>
@@ -227,8 +217,6 @@ const EmptyState = ({ searching }: { searching: boolean }) => (
     </TableCell>
   </TableRow>
 );
-
-// ─── Main Component ───────────────────────────────────────────────────────────
 
 const Banner = () => {
   const navigate = useNavigate();
@@ -305,7 +293,6 @@ const Banner = () => {
 
   return (
     <div className="space-y-5">
-      {/* ─── HEADER ─── */}
       <Header
         title="Banners"
         description="Manage homepage banners, campaigns and visibility."
@@ -318,7 +305,6 @@ const Banner = () => {
         isRefreshing={loading}
       />
 
-      {/* ─── SEARCH ─── */}
       <div className="rounded-2xl border border-slate-200 bg-white px-4 py-3.5 shadow-sm">
         <div className="relative w-full max-w-sm">
           <div className="absolute left-3 top-1/2 -translate-y-1/2 flex items-center justify-center">
@@ -343,7 +329,6 @@ const Banner = () => {
         </div>
       </div>
 
-      {/* ─── TABLE ─── */}
       <div className="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm">
         {selectedBanners.length > 0 && (
           <BulkToolbar
@@ -434,7 +419,6 @@ const Banner = () => {
                       data-selected={isSelected}
                       className="group border-b border-slate-100 transition-colors hover:bg-gradient-to-r hover:from-emerald-50/30 hover:via-teal-50/20 hover:to-cyan-50/30 data-[selected=true]:bg-gradient-to-r data-[selected=true]:from-emerald-50/50 data-[selected=true]:via-teal-50/30 data-[selected=true]:to-cyan-50/50"
                     >
-                      {/* CHECKBOX */}
                       <TableCell className="pl-5">
                         <input
                           type="checkbox"
@@ -444,7 +428,6 @@ const Banner = () => {
                         />
                       </TableCell>
 
-                      {/* BANNER */}
                       <TableCell>
                         <div className="flex items-center gap-3">
                           <div className="relative flex-shrink-0">
@@ -474,7 +457,6 @@ const Banner = () => {
                         </div>
                       </TableCell>
 
-                      {/* TYPE */}
                       <TableCell>
                         {banner.bannerType ? (
                           <BannerTypeChip type={banner.bannerType} />
@@ -483,7 +465,6 @@ const Banner = () => {
                         )}
                       </TableCell>
 
-                      {/* BADGES */}
                       <TableCell>
                         <div className="flex flex-wrap gap-1">
                           <FeaturedBadge featured={!!banner.isFeatured} />
@@ -501,14 +482,12 @@ const Banner = () => {
                         </div>
                       </TableCell>
 
-                      {/* START DATE */}
                       <TableCell>
                         <span className="text-sm text-slate-600">
                           {startFromDate}
                         </span>
                       </TableCell>
 
-                      {/* CREATED */}
                       <TableCell>
                         <span className="text-sm text-slate-600">
                           {new Date(banner.createdAt).toLocaleDateString(
@@ -518,7 +497,6 @@ const Banner = () => {
                         </span>
                       </TableCell>
 
-                      {/* UPDATED */}
                       <TableCell>
                         <span className="text-sm text-slate-600">
                           {new Date(banner.updatedAt).toLocaleDateString(
@@ -528,12 +506,10 @@ const Banner = () => {
                         </span>
                       </TableCell>
 
-                      {/* STATUS */}
                       <TableCell className="text-center">
                         <StatusBadge status={status} />
                       </TableCell>
 
-                      {/* ACTIONS */}
                       <TableCell className="pr-5">
                         <div className="flex items-center justify-center gap-1.5">
                           {!banner.isDeleted ? (
@@ -588,7 +564,6 @@ const Banner = () => {
         />
       </div>
 
-      {/* ─── MODALS ─── */}
       <ConfirmModal
         open={open}
         userName={selectedBanner?.name ?? "banner"}

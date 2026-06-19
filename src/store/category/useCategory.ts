@@ -1,5 +1,5 @@
 import { create } from "zustand";
-import { categoryService, type Category } from "@/services/CategoriesService";
+import { categoryService, type Category } from "@/services/CategoryService";
 
 type CategoryState = {
   categories: Category[];

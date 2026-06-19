@@ -33,9 +33,6 @@ import {
 import { toast } from "sonner";
 import { useBanners } from "@/hooks/banner/useBanner";
 
-// =========================================
-// TYPES
-// =========================================
 type BannerType =
   | "home"
   | "offer"
@@ -63,9 +60,6 @@ type FormValues = {
   seoDescription: string;
 };
 
-// =========================================
-// CONSTANTS
-// =========================================
 const BANNER_TYPES: { value: BannerType; label: string; emoji: string }[] = [
   { value: "home", label: "Home", emoji: "🏠" },
   { value: "offer", label: "Offer", emoji: "🎁" },
@@ -78,9 +72,6 @@ const BANNER_TYPES: { value: BannerType; label: string; emoji: string }[] = [
 const cardStyle =
   "rounded-3xl border border-slate-200 bg-white p-7 shadow-sm hover:shadow-lg transition-all duration-300";
 
-// =========================================
-// SECTION HEADER
-// =========================================
 const SectionHeader = ({
   icon: Icon,
   title,
@@ -101,9 +92,6 @@ const SectionHeader = ({
   </div>
 );
 
-// =========================================
-// BANNER TYPE SELECT
-// =========================================
 const BannerTypeSelect = ({
   value,
   onChange,
@@ -207,9 +195,6 @@ const BannerTypeSelect = ({
   );
 };
 
-// =========================================
-// CHAR COUNTER
-// =========================================
 const CharCount = ({ current, max }: { current: number; max: number }) => (
   <span
     className={`text-xs ${current > max * 0.9 ? "text-amber-500" : "text-slate-400"}`}
@@ -218,9 +203,6 @@ const CharCount = ({ current, max }: { current: number; max: number }) => (
   </span>
 );
 
-// =========================================
-// TOGGLE FIELD
-// =========================================
 const ToggleField = ({
   label,
   description,
@@ -281,9 +263,6 @@ const ToggleField = ({
   );
 };
 
-// =========================================
-// MAIN COMPONENT
-// =========================================
 const EditBanner = () => {
   const navigate = useNavigate();
   const { id } = useParams();
@@ -336,9 +315,6 @@ const EditBanner = () => {
   const watchedSeoTitle = watch("seoTitle");
   const watchedSeoDescription = watch("seoDescription");
 
-  // =========================================
-  // FETCH BANNER
-  // =========================================
   useEffect(() => {
     if (!id) return;
 
@@ -378,9 +354,6 @@ const EditBanner = () => {
     })();
   }, [id]);
 
-  // =========================================
-  // DESKTOP IMAGE UPLOAD
-  // =========================================
   const handleDesktopUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const selected = e.target.files?.[0];
     if (!selected) return;
@@ -399,9 +372,6 @@ const EditBanner = () => {
     setDesktopPreview("");
   };
 
-  // =========================================
-  // MOBILE IMAGE UPLOAD
-  // =========================================
   const handleMobileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const selected = e.target.files?.[0];
     if (!selected) return;
@@ -420,9 +390,6 @@ const EditBanner = () => {
     setMobilePreview("");
   };
 
-  // =========================================
-  // AUTO-FILL SEO
-  // =========================================
   const autoFillSeo = () => {
     if (watchedName && !watchedSeoTitle) {
       setValue("seoTitle", `${watchedName} | ${watchedTitle || "Banner"}`);
@@ -432,9 +399,6 @@ const EditBanner = () => {
     }
   };
 
-  // =========================================
-  // SLUG PREVIEW
-  // =========================================
   const slugPreview = watchedName
     ? watchedName
         .toLowerCase()
@@ -443,9 +407,6 @@ const EditBanner = () => {
         .replace(/[^\w-]+/g, "")
     : null;
 
-  // =========================================
-  // SUBMIT
-  // =========================================
   const onSubmit = async (data: FormValues) => {
     if (!id) return;
 
@@ -508,9 +469,7 @@ const EditBanner = () => {
       <div className="mx-auto py-8">
         <form onSubmit={handleSubmit(onSubmit)}>
           <div className="grid gap-8 xl:grid-cols-12">
-            {/* ================= LEFT SECTION ================= */}
             <div className="space-y-8 xl:col-span-8">
-              {/* ================= BANNER DETAILS ================= */}
               <motion.div
                 initial={{ opacity: 0, y: 15 }}
                 animate={{ opacity: 1, y: 0 }}
@@ -637,7 +596,6 @@ const EditBanner = () => {
                 </div>
               </motion.div>
 
-              {/* ================= OFFER DETAILS ================= */}
               <motion.div
                 initial={{ opacity: 0, y: 15 }}
                 animate={{ opacity: 1, y: 0 }}
@@ -741,7 +699,6 @@ const EditBanner = () => {
                 </div>
               </motion.div>
 
-              {/* ================= SCHEDULE & PRIORITY ================= */}
               <motion.div
                 initial={{ opacity: 0, y: 15 }}
                 animate={{ opacity: 1, y: 0 }}
@@ -806,7 +763,6 @@ const EditBanner = () => {
                 </div>
               </motion.div>
 
-              {/* ================= DESKTOP IMAGE ================= */}
               <motion.div
                 initial={{ opacity: 0, y: 15 }}
                 animate={{ opacity: 1, y: 0 }}
@@ -885,7 +841,6 @@ const EditBanner = () => {
                 )}
               </motion.div>
 
-              {/* ================= MOBILE IMAGE ================= */}
               <motion.div
                 initial={{ opacity: 0, y: 15 }}
                 animate={{ opacity: 1, y: 0 }}
@@ -964,7 +919,6 @@ const EditBanner = () => {
                 )}
               </motion.div>
 
-              {/* ================= SEO ================= */}
               <motion.div
                 initial={{ opacity: 0, y: 15 }}
                 animate={{ opacity: 1, y: 0 }}
@@ -1066,7 +1020,6 @@ const EditBanner = () => {
                 </div>
               </motion.div>
 
-              {/* ================= BANNER SETTINGS ================= */}
               <motion.div
                 initial={{ opacity: 0, y: 15 }}
                 animate={{ opacity: 1, y: 0 }}
@@ -1119,7 +1072,6 @@ const EditBanner = () => {
               </motion.div>
             </div>
 
-            {/* ================= RIGHT SIDEBAR ================= */}
             <div className="xl:col-span-4">
               <div className="sticky top-6">
                 <div className="overflow-hidden rounded-3xl border border-slate-200 bg-white shadow-xl shadow-slate-100">
