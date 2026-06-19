@@ -1,76 +1,28 @@
 import { create } from "zustand";
 import { bannerService } from "@/services/BannerService";
+import type { Banner, GetAllBannersParams } from "@/types/banner.type";
 
-// ================= TYPES =================
-export type Banner = {
-  isFeatured: any;
-  bannerType: string;
-  _id: string;
-
-  name: string;
-  title: string;
-  description?: string;
-
-  desktopImage: {
-    url: string;
-    public_id: string;
-  };
-
-  mobileImage?: {
-    url: string;
-    public_id: string;
-  };
-
-  startFrom?: string | Date;
-  endAt?: string | Date;
-
-  isActive: boolean;
-  isDeleted?: boolean;
-
-  createdAt: string | Date;
-  updatedAt: string | Date;
-};
-
-// ================= STORE STATE =================
 type BannerState = {
   banners: Banner[];
   selectedBanner: Banner | null;
-
   loading: boolean;
   isFetchingBanners: boolean;
   error: string | null;
-
   total: number;
   page: number;
   pages: number;
-
-  // ================= ACTIONS =================
-  getAllBanners: (params?: {
-    page?: number;
-    limit?: number;
-    search?: string;
-  }) => Promise<void>;
-
+  getAllBanners: (params?: GetAllBannersParams) => Promise<void>;
   getBannerById: (id: string) => Promise<void>;
-
   createBanner: (payload: FormData) => Promise<void>;
-
   updateBanner: (id: string, payload: FormData) => Promise<void>;
-
   deleteBanner: (id: string) => Promise<void>;
-
   toggleBannerStatus: (id: string) => Promise<void>;
-
   bulkDeleteBanners: (ids: string[]) => Promise<void>;
-
   bulkRestoreBanners: (ids: string[]) => Promise<void>;
-
   bulkPermanentDeleteBanners: (ids: string[]) => Promise<void>;
-
   setBanners: (banners: Banner[]) => void;
 };
 
-// ================= STORE =================
 export const useBannerStore = create<BannerState>((set, get) => ({
   banners: [],
   selectedBanner: null,
@@ -83,9 +35,6 @@ export const useBannerStore = create<BannerState>((set, get) => ({
   page: 1,
   pages: 1,
 
-  // =========================================
-  // GET ALL BANNERS
-  // =========================================
   getAllBanners: async (params = {}) => {
     try {
       set({
@@ -114,9 +63,6 @@ export const useBannerStore = create<BannerState>((set, get) => ({
     }
   },
 
-  // =========================================
-  // GET BANNER BY ID
-  // =========================================
   getBannerById: async (id: string) => {
     try {
       set({
@@ -140,9 +86,6 @@ export const useBannerStore = create<BannerState>((set, get) => ({
     }
   },
 
-  // =========================================
-  // CREATE BANNER
-  // =========================================
   createBanner: async (payload: FormData) => {
     try {
       set({
@@ -167,9 +110,6 @@ export const useBannerStore = create<BannerState>((set, get) => ({
     }
   },
 
-  // =========================================
-  // UPDATE BANNER
-  // =========================================
   updateBanner: async (id: string, payload: FormData) => {
     try {
       set({
@@ -194,9 +134,6 @@ export const useBannerStore = create<BannerState>((set, get) => ({
     }
   },
 
-  // =========================================
-  // DELETE BANNER (SOFT DELETE)
-  // =========================================
   deleteBanner: async (id: string) => {
     const previousBanners = get().banners;
 
@@ -218,9 +155,6 @@ export const useBannerStore = create<BannerState>((set, get) => ({
     }
   },
 
-  // =========================================
-  // TOGGLE STATUS
-  // =========================================
   toggleBannerStatus: async (id: string) => {
     try {
       set({
@@ -245,9 +179,6 @@ export const useBannerStore = create<BannerState>((set, get) => ({
     }
   },
 
-  // =========================================
-  // BULK DELETE
-  // =========================================
   bulkDeleteBanners: async (ids: string[]) => {
     const previousBanners = get().banners;
 
@@ -269,9 +200,6 @@ export const useBannerStore = create<BannerState>((set, get) => ({
     }
   },
 
-  // =========================================
-  // BULK RESTORE
-  // =========================================
   bulkRestoreBanners: async (ids: string[]) => {
     try {
       set({
@@ -296,9 +224,6 @@ export const useBannerStore = create<BannerState>((set, get) => ({
     }
   },
 
-  // =========================================
-  // BULK PERMANENT DELETE
-  // =========================================
   bulkPermanentDeleteBanners: async (ids: string[]) => {
     const previousBanners = get().banners;
 
@@ -322,9 +247,6 @@ export const useBannerStore = create<BannerState>((set, get) => ({
     }
   },
 
-  // =========================================
-  // SET BANNERS MANUALLY
-  // =========================================
   setBanners: (banners: Banner[]) => {
     set({ banners });
   },

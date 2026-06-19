@@ -4,7 +4,6 @@ import type {
   CategoryResponse,
   GetAllCategoriesParams,
   GetAllCategoriesResponse,
-  GetCategoryResponse,
 } from "@/types/category.types";
 
 export const categoryService = {
@@ -39,8 +38,8 @@ export const categoryService = {
     return data;
   },
 
-  getCategoryById: async (id: string): Promise<GetCategoryResponse> => {
-    const { data } = await api.get<GetCategoryResponse>(`/categories/${id}`);
+  getCategoryById: async (id: string): Promise<void> => {
+    const { data } = await api.get<void>(`/categories/${id}`);
     return data;
   },
 

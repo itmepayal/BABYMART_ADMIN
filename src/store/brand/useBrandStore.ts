@@ -1,95 +1,31 @@
 import { create } from "zustand";
+import type {
+  Brand,
+  GetAllBrandsParams,
+  CreateBrandPayload,
+  UpdateBrandPayload,
+} from "@/types/brand.type";
 import { brandService } from "@/services/BrandService";
-
-export type BrandCategory =
-  | "baby-care"
-  | "diapers"
-  | "feeding"
-  | "clothing"
-  | "toys"
-  | "health"
-  | "bath"
-  | "strollers"
-  | "maternity"
-  | "nursery"
-  | "school"
-  | "accessories";
-
-export interface BrandImage {
-  url: string;
-  public_id: string;
-}
-
-export interface Brand {
-  _id: string;
-  name: string;
-  slug: string;
-  description?: string;
-  logo: BrandImage;
-  banners?: BrandImage[];
-  website?: string;
-  category: BrandCategory;
-  isFeatured: boolean;
-  sortOrder: number;
-  isVerified: boolean;
-  isActive: boolean;
-  isDeleted: boolean;
-  deletedAt?: string | null;
-  seoTitle?: string;
-  seoDescription?: string;
-  createdAt: string;
-  updatedAt: string;
-}
-
-type BrandFilters = {
-  page?: number;
-  limit?: number;
-  search?: string;
-  category?: BrandCategory;
-  isActive?: boolean;
-  isFeatured?: boolean;
-  isVerified?: boolean;
-};
 
 type BrandState = {
   brands: Brand[];
-
   selectedBrand: Brand | null;
-
   loading: boolean;
-
   isFetchingBrands: boolean;
-
   error: string | null;
-
   total: number;
-
   page: number;
-
   pages: number;
-
-  // ================= ACTIONS =================
-
-  getAllBrands: (params?: BrandFilters) => Promise<void>;
-
+  getAllBrands: (params?: GetAllBrandsParams) => Promise<void>;
   getBrandById: (id: string) => Promise<void>;
-
-  createBrand: (payload: any) => Promise<void>;
-
-  updateBrand: (id: string, payload: any) => Promise<void>;
-
+  createBrand: (payload: CreateBrandPayload) => Promise<void>;
+  updateBrand: (id: string, payload: UpdateBrandPayload) => Promise<void>;
   deleteBrand: (id: string) => Promise<void>;
-
   bulkDeleteBrands: (ids: string[]) => Promise<void>;
-
   bulkRestoreBrands: (ids: string[]) => Promise<void>;
-
   bulkPermanentDeleteBrands: (ids: string[]) => Promise<void>;
-
   setBrands: (brands: Brand[]) => void;
-
   clearSelectedBrand: () => void;
-
   clearError: () => void;
 };
 
@@ -103,10 +39,6 @@ export const useBrandStore = create<BrandState>((set, get) => ({
   page: 1,
   pages: 1,
 
-  // =========================================
-  // GET ALL BRANDS
-  // =========================================
-
   getAllBrands: async (params = {}) => {
     try {
       set({
@@ -114,14 +46,12 @@ export const useBrandStore = create<BrandState>((set, get) => ({
         isFetchingBrands: true,
         error: null,
       });
-
       const res = await brandService.getAllBrands(params);
-
       set({
-        brands: res.brands || [],
-        total: res.total || 0,
-        page: res.page || 1,
-        pages: res.pages || 1,
+        brands: res?.brands || [],
+        total: res?.total || 0,
+        page: res?.page || 1,
+        pages: res?.pages || 1,
         loading: false,
         isFetchingBrands: false,
       });
@@ -138,10 +68,6 @@ export const useBrandStore = create<BrandState>((set, get) => ({
       throw err;
     }
   },
-
-  // =========================================
-  // GET BRAND BY ID
-  // =========================================
 
   getBrandById: async (id: string) => {
     try {
@@ -168,10 +94,6 @@ export const useBrandStore = create<BrandState>((set, get) => ({
       throw err;
     }
   },
-
-  // =========================================
-  // CREATE BRAND
-  // =========================================
 
   createBrand: async (payload) => {
     try {
@@ -200,10 +122,6 @@ export const useBrandStore = create<BrandState>((set, get) => ({
     }
   },
 
-  // =========================================
-  // UPDATE BRAND
-  // =========================================
-
   updateBrand: async (id, payload) => {
     try {
       set({
@@ -231,10 +149,6 @@ export const useBrandStore = create<BrandState>((set, get) => ({
     }
   },
 
-  // =========================================
-  // DELETE BRAND
-  // =========================================
-
   deleteBrand: async (id) => {
     const previousBrands = get().brands;
 
@@ -260,10 +174,6 @@ export const useBrandStore = create<BrandState>((set, get) => ({
     }
   },
 
-  // =========================================
-  // BULK DELETE
-  // =========================================
-
   bulkDeleteBrands: async (ids) => {
     const previousBrands = get().brands;
 
@@ -287,10 +197,6 @@ export const useBrandStore = create<BrandState>((set, get) => ({
     }
   },
 
-  // =========================================
-  // BULK RESTORE
-  // =========================================
-
   bulkRestoreBrands: async (ids) => {
     try {
       set({
@@ -308,10 +214,6 @@ export const useBrandStore = create<BrandState>((set, get) => ({
       throw err;
     }
   },
-
-  // =========================================
-  // BULK PERMANENT DELETE
-  // =========================================
 
   bulkPermanentDeleteBrands: async (ids) => {
     const previousBrands = get().brands;
@@ -337,10 +239,6 @@ export const useBrandStore = create<BrandState>((set, get) => ({
       throw err;
     }
   },
-
-  // =========================================
-  // HELPERS
-  // =========================================
 
   setBrands: (brands) => {
     set({

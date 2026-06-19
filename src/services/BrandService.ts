@@ -2,13 +2,14 @@ import { api } from "@/lib/config";
 import type {
   CreateBrandPayload,
   GetAllBrandsParams,
-  GetAllBrandsResponse,
+  BrandPaginationData,
+  UpdateBrandPayload,
 } from "@/types/brand.type";
 
 export const brandService = {
   async getAllBrands(
     params: GetAllBrandsParams = {},
-  ): Promise<GetAllBrandsResponse> {
+  ): Promise<BrandPaginationData> {
     const { data } = await api.get("/brands/admin", {
       params,
     });
@@ -54,7 +55,7 @@ export const brandService = {
     return data;
   },
 
-  async updateBrand(id: string, formData: FormData) {
+  async updateBrand(id: string, formData: UpdateBrandPayload) {
     const { data } = await api.patch(`/brands/${id}`, formData, {
       headers: {
         "Content-Type": "multipart/form-data",

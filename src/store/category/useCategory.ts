@@ -1,37 +1,29 @@
 import { create } from "zustand";
-import { categoryService, type Category } from "@/services/CategoryService";
+import { categoryService } from "@/services/CategoryService";
+import type { Category } from "@/types/category.types";
 
 type CategoryState = {
   categories: Category[];
   selectedCategory: Category | null;
-
   loading: boolean;
   isFetchingCategories: boolean;
   error: string | null;
-
   total: number;
   page: number;
   pages: number;
-
-  // ================= ACTIONS =================
   getAllCategories: (params?: {
     page?: number;
     limit?: number;
     search?: string;
     isActive?: boolean;
   }) => Promise<void>;
-
   getCategoryById: (id: string) => Promise<void>;
-
   createCategory: (payload: FormData) => Promise<void>;
   updateCategory: (id: string, payload: FormData) => Promise<void>;
-
   deleteCategory: (id: string) => Promise<void>;
-
   bulkDeleteCategories: (ids: string[]) => Promise<void>;
   bulkRestoreCategories: (ids: string[]) => Promise<void>;
   bulkPermanentDeleteCategories: (ids: string[]) => Promise<void>;
-
   setCategories: (categories: Category[]) => void;
 };
 
@@ -47,7 +39,6 @@ export const useCategoryStore = create<CategoryState>((set, get) => ({
   page: 1,
   pages: 1,
 
-  // ================= GET ALL =================
   getAllCategories: async (params = {}) => {
     try {
       set({
@@ -74,15 +65,15 @@ export const useCategoryStore = create<CategoryState>((set, get) => ({
     }
   },
 
-  // ================= GET BY ID =================
   getCategoryById: async (id) => {
     try {
       set({ loading: true });
 
       const res = await categoryService.getCategoryById(id);
-
+      console.log("I am response");
+      console.log(res);
       set({
-        selectedCategory: res.data,
+        selectedCategory: data,
         loading: false,
       });
     } catch (err: any) {
@@ -93,7 +84,6 @@ export const useCategoryStore = create<CategoryState>((set, get) => ({
     }
   },
 
-  // ================= CREATE =================
   createCategory: async (payload) => {
     try {
       set({ loading: true });
@@ -113,7 +103,6 @@ export const useCategoryStore = create<CategoryState>((set, get) => ({
     }
   },
 
-  // ================= UPDATE =================
   updateCategory: async (id, payload) => {
     try {
       set({ loading: true });
@@ -132,7 +121,6 @@ export const useCategoryStore = create<CategoryState>((set, get) => ({
     }
   },
 
-  // ================= SINGLE DELETE =================
   deleteCategory: async (id) => {
     const prev = get().categories;
 
@@ -151,7 +139,6 @@ export const useCategoryStore = create<CategoryState>((set, get) => ({
     }
   },
 
-  // ================= BULK DELETE =================
   bulkDeleteCategories: async (ids) => {
     const prev = get().categories;
 
@@ -170,7 +157,6 @@ export const useCategoryStore = create<CategoryState>((set, get) => ({
     }
   },
 
-  // ================= BULK RESTORE =================
   bulkRestoreCategories: async (ids) => {
     try {
       await categoryService.bulkRestoreCategories(ids);
@@ -182,7 +168,6 @@ export const useCategoryStore = create<CategoryState>((set, get) => ({
     }
   },
 
-  // ================= BULK PERMANENT DELETE =================
   bulkPermanentDeleteCategories: async (ids) => {
     const prev = get().categories;
 
@@ -201,6 +186,5 @@ export const useCategoryStore = create<CategoryState>((set, get) => ({
     }
   },
 
-  // ================= SET =================
   setCategories: (categories) => set({ categories }),
 }));
