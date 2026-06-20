@@ -73,7 +73,7 @@ export const useCategoryStore = create<CategoryState>((set, get) => ({
       console.log("I am response");
       console.log(res);
       set({
-        selectedCategory: data,
+        selectedCategory: res,
         loading: false,
       });
     } catch (err: any) {
